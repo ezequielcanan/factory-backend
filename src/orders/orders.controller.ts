@@ -1,0 +1,11 @@
+import { Controller } from '@nestjs/common';
+import { OrdersService } from './orders.service';
+import { ConfigService } from '@nestjs/config';
+
+@Controller('orders')
+export class OrdersController {
+  constructor(
+    private readonly ordersService: OrdersService,
+    private config: ConfigService
+  ) {}
+}
