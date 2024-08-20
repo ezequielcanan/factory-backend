@@ -7,9 +7,6 @@ export class Order {
   @Prop()
   id: number
 
-  @Prop({type: String, enum: ["common", "customized"]})
-  type: string
-
   @Prop({type: [ItemSchema]})
   articles: Item[]
 
