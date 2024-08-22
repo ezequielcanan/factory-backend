@@ -1,6 +1,6 @@
-import { IsEmail, MinLength, isEnum, isString } from "class-validator";
+import { IsEmail, MinLength } from "class-validator";
 
-export class CreateUserDto {
+export class RegisterDto {
   @MinLength(1)
   username: string
 
@@ -10,6 +10,4 @@ export class CreateUserDto {
 
   @MinLength(4)
   password: string
-  
-  role: string
 }

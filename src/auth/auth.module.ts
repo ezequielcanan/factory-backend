@@ -8,14 +8,19 @@ import { LocalStrategy } from './strategies/local.strategy';
 import { JwtModule } from '@nestjs/jwt';
 import { JwtStrategy } from './strategies/jwt.strategy';
 import { MongooseModule } from '@nestjs/mongoose';
-import { User } from 'src/users/schema/users.schema';
+import { User, UserSchema } from 'src/users/schema/users.schema';
 
 @Module({
-  imports: [UsersModule,
-    PassportModule,
-    MongooseModule.forFeature([
-      {name: User.name, schema: User}
+  imports: [
+    MongooseModule.forFeatureAsync([
+      {name: User.name, useFactory: () => {
+        const schema = UserSchema;
+        schema.plugin(require('mongoose-unique-validator'), { message: 'your custom message' }); // or you can integrate it without the options   schema.plugin(require('mongoose-unique-validator')
+        return schema;
+      }}
     ]),
+    UsersModule,
+    PassportModule,
     JwtModule.register({
       secret: "fabric",
       signOptions: { expiresIn: '24h' },

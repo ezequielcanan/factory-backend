@@ -6,7 +6,7 @@ export class User {
   @Prop()
   username: string
   
-  @Prop()
+  @Prop({type: String, unique: true})
   email: string
 
   @Prop()
