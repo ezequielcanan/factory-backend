@@ -4,10 +4,16 @@ import { HydratedDocument } from "mongoose";
 @Schema()
 export class Article {
     @Prop()
-    stock: number;
+    stock: number
 
     @Prop()
-    description: string;
+    description: string
+
+    @Prop()
+    color: string
+
+    @Prop()
+    size: string
 }
 
 export const ArticleSchema = SchemaFactory.createForClass(Article)
