@@ -7,7 +7,6 @@ import { CreateArticleDto } from './dto/create-article.dto';
 export class ArticlesController {
   constructor(
     private readonly articlesService: ArticlesService,
-    private config: ConfigService
   ) {}
   
   @Post()

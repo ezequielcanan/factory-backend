@@ -13,6 +13,5 @@ export class CreateArticleDto {
   @MinLength(1)
   size: string
 
-  @MinLength(1)
   cateogry: string
 }
