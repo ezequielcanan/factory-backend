@@ -24,6 +24,11 @@ export class ArticlesController {
     return this.articlesService.getArticle(id)
   }
 
+  @Put("/:id")
+  async updateArticle(@Param("id") id: string, @Body() article: CreateArticleDto) {
+    return this.articlesService.updateArticle(id, article)
+  }
+
   @Put("/stock/:id")
   async updateStock(@Param("id") id: string, @Query("stock") stock: string) {
     return this.articlesService.updateStock(Number(stock), id)

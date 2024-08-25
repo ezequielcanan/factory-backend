@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Post } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post, Put } from '@nestjs/common';
 import { ClientsService } from './clients.service';
 import { ConfigService } from '@nestjs/config';
 import { CreateClientDto } from './dto/create-client.dto';
@@ -17,5 +17,15 @@ export class ClientsController {
   @Get()
   async getClients() {
     return this.clientsService.getClients()
+  }
+  
+  @Get("/:id")
+  async getClient(@Param("id") id: string) {
+    return this.clientsService.getClient(id)
+  }
+
+  @Put("/:id")
+  async updateClient(@Param("id") id: string, @Body() client: CreateClientDto) {
+    return this.clientsService.updateClient(id, client)
   }
 }

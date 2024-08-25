@@ -17,4 +17,12 @@ export class ClientsService {
   async getClients(): Promise<Client[]> {
     return this.clientModel.find()
   }
+
+  async getClient(id: string): Promise<Client | undefined> {
+    return this.clientModel.findOne({_id: id})
+  }
+
+  async updateClient(id: string, client: CreateClientDto): Promise<Client | undefined> {
+    return this.clientModel.findOneAndUpdate({_id: id}, {$set: client}, {new: true})
+  }
 }
