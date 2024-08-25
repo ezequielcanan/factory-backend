@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Post } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post, Put, Query } from '@nestjs/common';
 import { ArticlesService } from './articles.service';
 import {ConfigService} from "@nestjs/config"
 import { CreateArticleDto } from './dto/create-article.dto';
@@ -17,5 +17,15 @@ export class ArticlesController {
   @Get()
   async getArticles() {
     return this.articlesService.getArticles()
+  }
+
+  @Get("/:id")
+  async getArticle(@Param("id") id: string) {
+    return this.articlesService.getArticle(id)
+  }
+
+  @Put("/stock/:id")
+  async updateStock(@Param("id") id: string, @Query("stock") stock: string) {
+    return this.articlesService.updateStock(Number(stock), id)
   }
 }
