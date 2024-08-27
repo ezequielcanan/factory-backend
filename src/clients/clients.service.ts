@@ -15,7 +15,16 @@ export class ClientsService {
   }
 
   async getClients(): Promise<Client[]> {
-    return this.clientModel.find()
+    return this.clientModel.aggregate([
+      {
+        $project: {
+          name: { $toLower: "$name" },
+          original: "$$ROOT"
+        }
+      },
+      { $sort: { name: 1 } },
+      { $replaceRoot: { newRoot: "$original" } }
+    ]);
   }
 
   async getClient(id: string): Promise<Client | undefined> {
