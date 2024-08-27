@@ -1,7 +1,7 @@
 import { IsNumber, MinLength } from "class-validator";
 
 export class CreateArticleDto {
-  @MinLength(5)
+  @MinLength(1)
   description: string
 
   @IsNumber()

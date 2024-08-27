@@ -19,6 +19,12 @@ export class Item {
 
   @Prop({type: Types.ObjectId, ref: Article.name})
   article: Types.ObjectId
+
+  @Prop()
+  unitPrice: number
+
+  @Prop()
+  price: number
 }
 
 export const ItemSchema = SchemaFactory.createForClass(Item)
