@@ -2,6 +2,7 @@ import { Body, Controller, Get, Param, Post, Put, Query } from '@nestjs/common';
 import { ArticlesService } from './articles.service';
 import {ConfigService} from "@nestjs/config"
 import { CreateArticleDto } from './dto/create-article.dto';
+import { CreateCustomArticleDto } from './dto/create-customarticle.dto';
 
 @Controller('articles')
 export class ArticlesController {
@@ -12,6 +13,11 @@ export class ArticlesController {
   @Post()
   async createArticle(@Body() article: CreateArticleDto) {
     return this.articlesService.createArticle(article)
+  }
+
+  @Post("/custom")
+  async createCustomArticle(@Body() articles: CreateCustomArticleDto[]) {
+    return this.articlesService.createCustomArticles(articles)
   }
 
   @Get()

@@ -1,7 +1,7 @@
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
 import { HydratedDocument, Types } from "mongoose";
 import { Article } from "src/articles/schema/articles.schema";
-import { CustomArticle, CustomArticleSchema } from "./customArticle.schema";
+import { CustomArticle } from "../../articles/schema/customArticle.schema";
 
 @Schema()
 export class Item {
@@ -14,8 +14,8 @@ export class Item {
   @Prop()
   common: boolean
 
-  @Prop({type: CustomArticleSchema})
-  customArticle: CustomArticle
+  @Prop({type: Types.ObjectId, ref: CustomArticle.name})
+  customArticle: Types.ObjectId
 
   @Prop({type: Types.ObjectId, ref: Article.name})
   article: Types.ObjectId

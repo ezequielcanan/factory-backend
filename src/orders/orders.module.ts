@@ -6,6 +6,7 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { Order, OrderSchema } from './schemas/orders.schema';
 import { Item, ItemSchema } from './schemas/item.schema';
 import { Article, ArticleSchema } from 'src/articles/schema/articles.schema';
+import { CustomArticle, CustomArticleSchema } from 'src/articles/schema/customArticle.schema';
 
 @Module({
   imports: [
@@ -13,7 +14,7 @@ import { Article, ArticleSchema } from 'src/articles/schema/articles.schema';
       {name: Order.name, schema: OrderSchema},
       {name: Item.name, schema: ItemSchema},
       {name: Article.name, schema: ArticleSchema},
-
+      {name: CustomArticle.name, schema: CustomArticleSchema},
     ]),
     ConfigModule
   ],

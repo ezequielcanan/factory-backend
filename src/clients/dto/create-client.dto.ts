@@ -8,4 +8,8 @@ export class CreateClientDto {
   phone: string
 
   cuit: string
+
+  address: string
+
+  detail: string
 }

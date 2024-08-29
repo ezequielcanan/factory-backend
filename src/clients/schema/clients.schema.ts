@@ -14,6 +14,12 @@ export class Client {
 
   @Prop()
   phone: string
+
+  @Prop()
+  address: string
+
+  @Prop()
+  detail: string
 }
 
 export const ClientSchema = SchemaFactory.createForClass(Client)
