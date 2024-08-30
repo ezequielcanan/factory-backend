@@ -14,6 +14,9 @@ export class Item {
   @Prop()
   common: boolean
 
+  @Prop()
+  hasToBeCut: boolean
+
   @Prop({type: Types.ObjectId, ref: CustomArticle.name})
   customArticle: Types.ObjectId
 

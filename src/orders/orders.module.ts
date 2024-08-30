@@ -7,18 +7,22 @@ import { Order, OrderSchema } from './schemas/orders.schema';
 import { Item, ItemSchema } from './schemas/item.schema';
 import { Article, ArticleSchema } from 'src/articles/schema/articles.schema';
 import { CustomArticle, CustomArticleSchema } from 'src/articles/schema/customArticle.schema';
+import { ArticlesService } from 'src/articles/articles.service';
+import { Cut, CutsSchema } from 'src/cuts/schema/cuts.schema';
+import { CutsService } from 'src/cuts/cuts.service';
 
 @Module({
   imports: [
     MongooseModule.forFeature([
       {name: Order.name, schema: OrderSchema},
       {name: Item.name, schema: ItemSchema},
+      {name: Cut.name, schema: CutsSchema},
       {name: Article.name, schema: ArticleSchema},
       {name: CustomArticle.name, schema: CustomArticleSchema},
     ]),
     ConfigModule
   ],
   controllers: [OrdersController],
-  providers: [OrdersService]
+  providers: [OrdersService, ArticlesService, CutsService]
 })
 export class OrdersModule {}

@@ -1,8 +1,8 @@
 import { IsArray, IsBoolean, IsDate, IsNotEmpty, IsNumber, IsOptional, IsString, ValidateNested } from 'class-validator';
 import { Types } from 'mongoose';
-import { Type } from 'class-transformer';
+import { Type, Transform } from 'class-transformer';
 
-class ItemDto {
+export class ItemDto {
   booked: number
 
   quantity: number
@@ -18,19 +18,18 @@ class ItemDto {
   article: Types.ObjectId
 
   @IsOptional()
+  @IsBoolean()
+  hasToBeCut: boolean
+  /*@IsOptional()
   @IsNumber()
   unitPrice: number
 
   @IsOptional()
   @IsNumber()
-  price: number
+  price: number*/
 }
 
 export class CreateOrderDto {
-  @IsNotEmpty()
-  @IsNumber()
-  orderNumber: number;
-
   @IsArray()
   @ValidateNested({ each: true })
   @Type(() => ItemDto)
@@ -38,7 +37,7 @@ export class CreateOrderDto {
 
   @IsNotEmpty()
   @IsString()
-  client: Types.ObjectId;
+  client: string;
 
   @IsOptional()
   @IsDate()
