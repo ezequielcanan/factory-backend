@@ -14,6 +14,17 @@ export class OrdersController {
     private config: ConfigService
   ) {}
 
+  
+  @Get()
+  async getOrders() {
+    return this.ordersService.getOrders()
+  }
+
+  @Get("/:id")
+  async getOrder(@Param("id") id: string) {
+    return this.ordersService.getOrderAndCut(id)
+  }
+
   @Post()
   async createOrder(@Body() order: CreateOrderDto) {
     const createdOrder = await this.ordersService.createOrder(order)

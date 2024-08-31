@@ -1,17 +1,19 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Type } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Order, OrderDocument } from './schemas/orders.schema';
 import { Types } from 'mongoose';
 import { Model } from 'mongoose';
 import { CreateOrderDto } from './dto/create-order.dto';
+import { CutsService } from 'src/cuts/cuts.service';
 
 @Injectable()
 export class OrdersService {
   constructor(
-    @InjectModel(Order.name) private orderModel: Model<OrderDocument>
+    @InjectModel(Order.name) private orderModel: Model<OrderDocument>,
+    private readonly cutsService: CutsService
   ) { }
 
-  async getBookedQuantity(articleId: string): Promise<number> {
+  async getBookedQuantity(articleId: string | Types.ObjectId): Promise<number> {
     const result = await this.orderModel.aggregate([
       { $match: { finished: false, "articles.article": new Types.ObjectId(articleId) } },
       { $unwind: "$articles" },
@@ -28,7 +30,17 @@ export class OrdersService {
 
 
   async getOrder(id: string): Promise<Order | undefined> {
-    return this.orderModel.findOne({_id: id})
+    return this.orderModel.findOne({_id: id}).populate("client").populate("articles.article").populate("articles.customArticle")
+  }
+
+  async getOrderAndCut(id: string): Promise<any> {
+    const order = await this.getOrder(id)
+    const cut = await this.cutsService.getCutFromOrder(id)
+    return {order,cut}
+  }
+
+  async getOrders(): Promise<Order[] | undefined> {
+    return this.orderModel.find().populate("client").populate("articles.article").populate("articles.customArticle")
   }
 
   async createOrder(order: CreateOrderDto): Promise<Order | undefined> {
@@ -54,15 +66,26 @@ export class OrdersService {
 
   async setToCutCommonArticles(id: string): Promise<any> {
     const order = await this.getOrder(id)
+    const cut = await this.cutsService.getCutFromOrder(id)
 
+    if (!order) {
+      return {order: false}
+    }
+    
     const newArticles = order.articles?.map(article => {
       if (article?.common && article?.quantity > article?.booked) {
         article.hasToBeCut = true
       }
-
+      
       return article
     })
+    
+    
+    const newOrder = await this.orderModel.findOneAndUpdate({finished: false, _id: id}, {$set: {articles: newArticles}}, {new: true})
+    if (!cut) {
+      await this.cutsService.createCutFromOrder(newOrder)
+    }
 
-    return this.orderModel.updateOne({finished: false, _id: id}, {$set: {articles: newArticles}})
+    return newOrder
   }
 }

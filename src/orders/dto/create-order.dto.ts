@@ -44,6 +44,11 @@ export class CreateOrderDto {
   @Type(() => Date)
   date: Date;
 
+  @IsOptional()
+  @IsDate()
+  @Type(() => Date)
+  deliveryDate: Date;
+
   @IsNotEmpty()
   @IsBoolean()
   finished: boolean;

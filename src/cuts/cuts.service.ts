@@ -26,4 +26,8 @@ export class CutsService {
       null
     }
   }
+
+  async getCutFromOrder(orderId: string): Promise<Cut | undefined> {
+    return this.cutsModel.findOne({order: orderId})
+  }
 }

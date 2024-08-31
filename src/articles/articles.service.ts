@@ -5,20 +5,29 @@ import {Article, ArticleDocument} from "./schema/articles.schema"
 import { CreateArticleDto } from './dto/create-article.dto';
 import { CustomArticle, CustomArticleDocument } from './schema/customArticle.schema';
 import { CreateCustomArticleDto } from './dto/create-customarticle.dto';
+import { OrdersService } from 'src/orders/orders.service';
 
 @Injectable()
 export class ArticlesService {
   constructor(
     @InjectModel(Article.name) private articleModel: Model<ArticleDocument>,
-    @InjectModel(CustomArticle.name) private customArticleModel: Model<CustomArticleDocument>
+    @InjectModel(CustomArticle.name) private customArticleModel: Model<CustomArticleDocument>,
+    private readonly ordersService: OrdersService
   ) {}
 
   async createArticle(article: CreateArticleDto): Promise<Article | undefined> {
     return this.articleModel.create(article)
   }
 
-  async getArticles(): Promise<Article[]> {
-    return this.articleModel.find()
+  async getArticles(): Promise<Article[] | any> {
+    const articles = await this.articleModel.find().lean().exec()
+    const newArticles = [...articles.map(a => a)]
+    await Promise.all(newArticles.map(async (article, i) => {
+      const booked = await this.ordersService.getBookedQuantity(article?._id)
+      newArticles[i].booked = booked
+    }))
+    console.log(newArticles)
+    return articles
   }
 
   async getArticle(id: string): Promise<Article> {
