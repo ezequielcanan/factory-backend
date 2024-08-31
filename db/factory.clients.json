@@ -1,0 +1,60 @@
+[{
+  "_id": {
+    "$oid": "66d3770723a09390d4197560"
+  },
+  "name": "Roberto",
+  "cuit": "30456895325",
+  "email": "roberto@gmail.com",
+  "phone": "1145349875",
+  "address": "Gorriti 1243",
+  "detail": "Tocar el timbre y esperar a la empleada domestica.",
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "66d3773423a09390d4197564"
+  },
+  "name": "Raul",
+  "cuit": "30452163524",
+  "email": "raul@gmail.com",
+  "phone": "1187965432",
+  "address": "Diaz Velez 2531",
+  "detail": "Dejar en seguridad.",
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "66d3778423a09390d4197568"
+  },
+  "name": "Enrique",
+  "cuit": "30265498735",
+  "email": "enrique@gmail.com",
+  "phone": "1123658974",
+  "address": "Potosi 4454",
+  "detail": "Entregar despues de las 17hs",
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "66d377be23a09390d419756c"
+  },
+  "name": "Daniela",
+  "cuit": "30568795635",
+  "email": "daniela@gmail.com",
+  "phone": "1165435298",
+  "address": "Corrientes 4023",
+  "detail": "Tocar el timbre",
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "66d3783123a09390d4197570"
+  },
+  "name": "Lucas",
+  "cuit": "30564832655",
+  "email": "lucas@gmail.com",
+  "phone": "1123659874",
+  "address": "Rawson 351",
+  "detail": "Dejar el pedido al seguridad",
+  "__v": 0
+}]

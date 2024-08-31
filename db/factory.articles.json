@@ -1,0 +1,72 @@
+[{
+  "_id": {
+    "$oid": "66d375ef23a09390d4197453"
+  },
+  "stock": 7,
+  "description": "Remera Roja",
+  "color": "Rojo",
+  "size": "M",
+  "category": "Remeras",
+  "society": "Arcan",
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "66d375ff23a09390d4197459"
+  },
+  "stock": 6,
+  "description": "Remera Gris",
+  "color": "Gris",
+  "size": "XL",
+  "category": "Remeras",
+  "society": "Arcan",
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "66d3761823a09390d4197461"
+  },
+  "stock": 12,
+  "description": "Remera Azul",
+  "color": "Azul",
+  "size": "XL",
+  "category": "Remeras",
+  "society": "Arcan",
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "66d3764923a09390d4197524"
+  },
+  "stock": 22,
+  "description": "Pantalon Hombre",
+  "color": "Gris",
+  "size": "LG",
+  "category": "Pantalones",
+  "society": "Arcan",
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "66d3766923a09390d4197530"
+  },
+  "stock": 14,
+  "description": "Zapatillas Lisas",
+  "color": "Negro",
+  "size": "LG",
+  "category": "Zapatillas",
+  "society": "Arcan",
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "66d3768123a09390d419753e"
+  },
+  "stock": 4,
+  "description": "Campera Azul",
+  "color": "Azul",
+  "size": "LG",
+  "category": "Camperas",
+  "society": "Arcan",
+  "__v": 0
+}]

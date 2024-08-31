@@ -1,0 +1,55 @@
+[{
+  "_id": {
+    "$oid": "66d378f323a09390d41975bf"
+  },
+  "orderNumber": 0,
+  "articles": [
+    {
+      "booked": 0,
+      "quantity": 5,
+      "common": false,
+      "hasToBeCut": true,
+      "customArticle": {
+        "$oid": "66d378f323a09390d41975b8"
+      },
+      "_id": {
+        "$oid": "66d378f323a09390d41975c0"
+      }
+    },
+    {
+      "booked": 4,
+      "quantity": 4,
+      "common": true,
+      "hasToBeCut": false,
+      "article": {
+        "$oid": "66d3766923a09390d4197530"
+      },
+      "_id": {
+        "$oid": "66d378f323a09390d41975c1"
+      }
+    },
+    {
+      "booked": 2,
+      "quantity": 2,
+      "common": true,
+      "hasToBeCut": false,
+      "article": {
+        "$oid": "66d3761823a09390d4197461"
+      },
+      "_id": {
+        "$oid": "66d378f323a09390d41975c2"
+      }
+    }
+  ],
+  "client": {
+    "$oid": "66d3770723a09390d4197560"
+  },
+  "deliveryDate": {
+    "$date": "2024-09-30T03:00:00.000Z"
+  },
+  "date": {
+    "$date": "2024-08-31T20:11:31.252Z"
+  },
+  "finished": false,
+  "__v": 0
+}]

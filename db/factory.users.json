@@ -1,0 +1,37 @@
+[{
+  "_id": {
+    "$oid": "66c74a82ebd11ae854feb32f"
+  },
+  "username": "Ezequiel",
+  "email": "ezequielcanan@gmail.com",
+  "password": "$2b$10$FVLQdIViGERUFKqGZGtslerSJU8O4qxsyX9Mq/2sBVJ7WWXJ/9716",
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "66c74a82ebd11ae854feb331"
+  },
+  "username": "Ezequiel",
+  "email": "ezequielcanan@gmail.com",
+  "password": "$2b$10$9ssvT20VcYdrTG9Q4H0Kfuu1MO0M7kyVH27U58ebya/QO1lqBRdt6",
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "66c74bad731be93745c8e26b"
+  },
+  "username": "Ezequiel",
+  "email": "ezequielcanann@gmail.com",
+  "password": "$2b$10$rySxYbPnGdo2/ukLpuM98.2d2Tc5ulfynLLO03jwkCzhXt9FjlcLG",
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "66c878bdd0f93bbfe2cd6573"
+  },
+  "username": "Damian",
+  "email": "damiancanan@gmail.com",
+  "password": "$2b$10$MadmAZjefuTSz9Y2q6hCNONZjAgRvhqud.TpZGzHnGRHUddeBpuou",
+  "roles": [],
+  "__v": 0
+}]

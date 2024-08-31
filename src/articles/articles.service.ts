@@ -21,13 +21,13 @@ export class ArticlesService {
 
   async getArticles(): Promise<Article[] | any> {
     const articles = await this.articleModel.find().lean().exec()
-    const newArticles = [...articles.map(a => a)]
-    await Promise.all(newArticles.map(async (article, i) => {
+    const newArticles = []
+    await Promise.all(articles.map(async (article, i) => {
       const booked = await this.ordersService.getBookedQuantity(article?._id)
-      newArticles[i].booked = booked
+      newArticles.push({...article, booked})
     }))
-    console.log(newArticles)
-    return articles
+
+    return newArticles
   }
 
   async getArticle(id: string): Promise<Article> {
