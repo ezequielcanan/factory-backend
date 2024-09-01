@@ -52,4 +52,8 @@ export class CreateOrderDto {
   @IsNotEmpty()
   @IsBoolean()
   finished: boolean;
+
+  @IsOptional()
+  @IsString()
+  extraInfo: string;
 }

@@ -22,6 +22,9 @@ export class Order {
 
   @Prop()
   finished: boolean
+
+  @Prop()
+  extraInfo: string
 }
 
 export const OrderSchema = SchemaFactory.createForClass(Order)

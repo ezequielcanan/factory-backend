@@ -30,4 +30,8 @@ export class CutsService {
   async getCutFromOrder(orderId: string): Promise<Cut | undefined> {
     return this.cutsModel.findOne({order: orderId})
   }
+
+  async getCuts(): Promise<Cut[] | undefined> {
+    return this.cutsModel.find().populate("order")
+  }
 }

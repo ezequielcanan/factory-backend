@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Post, Put } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post, Put, Query } from '@nestjs/common';
 import { OrdersService } from './orders.service';
 import { ConfigService } from '@nestjs/config';
 import { ArticlesService } from 'src/articles/articles.service';
@@ -33,15 +33,29 @@ export class OrdersController {
   }
 
   @Get("/booked/:id")
-  async getArticleBooked (@Param("id") id: string) {
+  async getArticleBooked(@Param("id") id: string) {
     const bookedQuantity = await this.ordersService.getBookedQuantity(id);
     const article = await this.articlesService.getArticle(id)
     return {booked: bookedQuantity, stock: article?.stock}
   }
 
   @Put("/articles/:id")
-  async setToCutCommonArticles (@Param("id") id: string) {
+  async setToCutCommonArticles(@Param("id") id: string) {
     const result = await this.ordersService.setToCutCommonArticles(id);
+    return result
+  }
+
+  @Put("/quantity/:oid/:aid/:qty")
+  async updateArticleQuantity(@Param() params: { oid: string, aid: string, qty: string }, @Query("custom") custom: string) {
+    const {oid, aid, qty} = params
+    const result = await this.ordersService.updateArticleQuantity(oid, aid, qty, custom)
+    return result
+  }
+
+  @Put("/booked/:oid/:aid/:qty")
+  async updateArticleBooked(@Param() params: { oid: string, aid: string, qty: string }, @Query("custom") custom: string) {
+    const {oid, aid, qty} = params
+    const result = await this.ordersService.updateArticleBooked(oid, aid, qty, custom)
     return result
   }
 }
