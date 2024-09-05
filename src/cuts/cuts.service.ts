@@ -27,11 +27,31 @@ export class CutsService {
     }
   }
 
-  async getCutFromOrder(orderId: string): Promise<Cut | undefined> {
+  async getCutFromOrder(orderId: string | Types.ObjectId): Promise<Cut | undefined> {
     return this.cutsModel.findOne({order: orderId})
   }
 
   async getCuts(): Promise<Cut[] | undefined> {
     return this.cutsModel.find().populate("order")
+  }
+
+  async getCut(id: string): Promise<Cut | undefined> {
+    let cut = await this.cutsModel.findOne({ _id: id });
+
+    if (cut) {
+        cut = await cut.populate({
+            path: 'order',
+            populate: [
+                {
+                    path: 'articles.article',
+                },
+                {
+                    path: 'articles.customArticle',
+                },
+            ],
+        });
+    }
+
+    return cut;
   }
 }

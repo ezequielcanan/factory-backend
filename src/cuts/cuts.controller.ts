@@ -1,4 +1,4 @@
-import { Controller, Get } from '@nestjs/common';
+import { Controller, Get, Param } from '@nestjs/common';
 import { CutsService } from './cuts.service';
 
 @Controller('cuts')
@@ -9,6 +9,11 @@ export class CutsController {
 
   @Get()
   async getCuts() {
-    return await this.cutsService.getCuts()
+    return this.cutsService.getCuts()
+  }
+
+  @Get("/:id")
+  async getCut(@Param("id") id: string) {
+    return this.cutsService.getCut(id)
   }
 }

@@ -69,7 +69,7 @@ export class OrdersService {
 
   async setToCutCommonArticles(id: string): Promise<any> {
     const order = await this.getOrder(id)
-    const cut = await this.cutsService.getCutFromOrder(id)
+    const cut = await this.cutsService.getCutFromOrder(new Types.ObjectId(id))
 
     if (!order) {
       return { order: false }
