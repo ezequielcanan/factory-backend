@@ -58,4 +58,11 @@ export class OrdersController {
     const result = await this.ordersService.updateArticleBooked(oid, aid, qty, custom)
     return result
   }
+
+  @Put("/cut-state/:oid/:aid")
+  async updateArticleCut(@Param() params: { oid: string, aid: string }, @Query("custom") custom: string) {
+    const {oid, aid} = params
+    const result = await this.ordersService.updateArticleCut(oid, aid, custom)
+    return result
+  }
 }

@@ -138,10 +138,10 @@ export class OrdersService {
 
       const order = await this.getOrder(oid)
       const bookedArticles = await this.getBookedQuantity(aid)
-      const article = await this.articlesModel.findOne({_id: aid})
+      const article = await this.articlesModel.findOne({ _id: aid })
       const articleToUpdate = order?.articles?.find((a) => String(custom ? a.customArticle?._id : a.article?._id) == aid)
 
-      if ((bookedArticles - (articleToUpdate?.booked) + parseInt(qty)) <= article?.stock && articleToUpdate.quantity >= parseInt(qty)) { 
+      if ((bookedArticles - (articleToUpdate?.booked) + parseInt(qty)) <= article?.stock && articleToUpdate.quantity >= parseInt(qty)) {
         const result = await this.orderModel.updateOne(
           findObj,
           setObj
@@ -149,5 +149,30 @@ export class OrdersService {
         return result;
       }
     }
+  }
+
+  async updateArticleCut(oid: string, aid: string, custom: string): Promise<any> {
+    const order = await this.getOrder(oid)
+    const cut = await this.cutsService.getCutFromOrder(new Types.ObjectId(oid))
+    const articleToUpdate = order?.articles?.find((a) => String(custom ? a.customArticle?._id : a.article?._id) == aid)
+
+    const findObj = this.getFindObjForArticle(oid, aid, custom)
+    const setObj = {
+      $set: {
+        "articles.$.hasToBeCut": !articleToUpdate?.hasToBeCut
+      }
+    }
+
+    const result = await this.orderModel.findOneAndUpdate(
+      findObj,
+      setObj,
+      {new: true}
+    );
+
+    if (!cut) {
+      await this.cutsService.createCutFromOrder(result)
+    }
+
+    return result;
   }
 }
