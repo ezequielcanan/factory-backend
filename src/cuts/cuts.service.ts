@@ -32,7 +32,53 @@ export class CutsService {
   }
 
   async getCuts(): Promise<Cut[] | undefined> {
-    return this.cutsModel.find().populate("order")
+    const cutsWithArticlesToCut = await this.cutsModel.aggregate([
+      {
+        $lookup: {
+          from: 'orders',
+          localField: 'order',
+          foreignField: '_id',
+          as: 'orderDetails'
+        }
+      },
+      {
+        $unwind: '$orderDetails'
+      },
+      {
+        $addFields: {
+          filteredArticles: {
+            $filter: {
+              input: '$orderDetails.articles',
+              as: 'article',
+              cond: {
+                $and: [
+                  { $eq: ['$$article.hasToBeCut', true] },
+                  { $gt: ['$$article.quantity', '$$article.booked'] }
+                ]
+              }
+            }
+          }
+        }
+      },
+      {
+        $match: {
+          'filteredArticles.0': { $exists: true }
+        }
+      },
+      {
+        $addFields: {
+          order: '$orderDetails'
+        }
+      },
+      {
+        $project: {
+          orderDetails: 0,
+          filteredArticles: 0
+        }
+      }
+    ])
+
+    return cutsWithArticlesToCut
   }
 
   async getCut(id: string): Promise<Cut | undefined> {
