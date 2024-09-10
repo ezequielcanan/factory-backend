@@ -13,6 +13,7 @@ import { UploadfilesModule } from './uploadfiles/uploadfiles.module';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'path';
 import { WorkshopsModule } from './workshops/workshops.module';
+import { WorkshopOrderModule } from './workshop-order/workshop-order.module';
 
 @Module({
   imports: [
@@ -36,7 +37,8 @@ import { WorkshopsModule } from './workshops/workshops.module';
     AuthModule,
     UsersModule,
     UploadfilesModule,
-    WorkshopsModule
+    WorkshopsModule,
+    WorkshopOrderModule
   ],
   controllers: [AppController],
   providers: [AppService],
