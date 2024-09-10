@@ -20,6 +20,12 @@ export class Client {
 
   @Prop()
   detail: string
+
+  @Prop()
+  expreso: string
+
+  @Prop()
+  expresoAddress: string
 }
 
 export const ClientSchema = SchemaFactory.createForClass(Client)

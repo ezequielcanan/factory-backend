@@ -15,6 +15,9 @@ export class Order {
   client: Types.ObjectId
 
   @Prop()
+  society: string
+
+  @Prop()
   deliveryDate: Date
 
   @Prop()

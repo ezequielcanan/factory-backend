@@ -42,8 +42,12 @@ export class OrdersService {
     return { order, cut }
   }
 
-  async getOrders(): Promise<Order[] | undefined> {
-    return this.orderModel.find().populate("client").populate("articles.article").populate("articles.customArticle")
+  async getOrders(society: string): Promise<Order[] | undefined> {
+    if (society) { 
+      return this.orderModel.find({society}).populate("client").populate("articles.article").populate("articles.customArticle")
+    } else {
+      return this.orderModel.find().populate("client").populate("articles.article").populate("articles.customArticle")
+    }
   }
 
   async createOrder(order: CreateOrderDto): Promise<Order | undefined> {

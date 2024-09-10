@@ -36,7 +36,7 @@ import { WorkshopsModule } from './workshops/workshops.module';
     AuthModule,
     UsersModule,
     UploadfilesModule,
-    WorkshopsModule,
+    WorkshopsModule
   ],
   controllers: [AppController],
   providers: [AppService],

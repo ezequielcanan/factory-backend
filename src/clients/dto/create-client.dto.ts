@@ -12,4 +12,8 @@ export class CreateClientDto {
   address: string
 
   detail: string
+
+  expreso: string
+
+  expresoAddress: string
 }

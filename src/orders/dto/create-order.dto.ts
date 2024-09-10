@@ -37,7 +37,11 @@ export class CreateOrderDto {
 
   @IsNotEmpty()
   @IsString()
-  client: string;
+  client: string
+
+  @IsNotEmpty()
+  @IsString()
+  society: string;
 
   @IsOptional()
   @IsDate()

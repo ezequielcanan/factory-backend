@@ -16,8 +16,8 @@ export class OrdersController {
 
   
   @Get()
-  async getOrders() {
-    return this.ordersService.getOrders()
+  async getOrders(@Query("society") society: string) {
+    return this.ordersService.getOrders(society)
   }
 
   @Get("/:id")
