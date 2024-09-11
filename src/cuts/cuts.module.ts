@@ -1,13 +1,19 @@
-import { Module } from '@nestjs/common';
+import { forwardRef, Module } from '@nestjs/common';
 import { CutsController } from './cuts.controller';
 import { CutsService } from './cuts.service';
 import { MongooseModule } from '@nestjs/mongoose';
 import { Cut, CutsSchema } from './schema/cuts.schema';
+import { Article, ArticleSchema } from 'src/articles/schema/articles.schema';
+import { CustomArticle, CustomArticleSchema } from 'src/articles/schema/customArticle.schema';
+import { ArticlesService } from 'src/articles/articles.service';
+import { ArticlesModule } from 'src/articles/articles.module';
 
 @Module({
   imports: [
     MongooseModule.forFeature([
-      {name: Cut.name, schema: CutsSchema}
+      {name: Cut.name, schema: CutsSchema},
+      {name: Article.name, schema: ArticleSchema},
+      {name: CustomArticle.name, schema: CustomArticleSchema},
     ])
   ],
   controllers: [CutsController],

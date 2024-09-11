@@ -31,4 +31,18 @@ export class Order {
 }
 
 export const OrderSchema = SchemaFactory.createForClass(Order)
+
+OrderSchema.pre("findOne", function (next) {
+  this.populate('articles.article')
+  this.populate('articles.customArticle')
+  next()
+})
+
+OrderSchema.pre("find", function (next) {
+  this.populate('articles.article')
+  this.populate('articles.customArticle')
+  next()
+})
+
+
 export type OrderDocument = HydratedDocument<Order>

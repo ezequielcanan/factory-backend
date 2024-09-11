@@ -19,4 +19,15 @@ export class Cut {
 }
 
 export const CutsSchema = SchemaFactory.createForClass(Cut)
+
+CutsSchema.pre("findOne", function (next) {
+  this.populate('order')
+  next()
+})
+
+CutsSchema.pre("find", function (next) {
+  this.populate('order')
+  next()
+})
+
 export type CutDocument = HydratedDocument<Cut>

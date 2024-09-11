@@ -4,16 +4,22 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 import { CreateCutDto } from './dto/create-cut.dto';
 import { Order } from 'src/orders/schemas/orders.schema';
+import { Article, ArticleDocument } from 'src/articles/schema/articles.schema';
+import { ArticlesService } from 'src/articles/articles.service';
+import { CustomArticle, CustomArticleDocument } from 'src/articles/schema/customArticle.schema';
 
 @Injectable()
 export class CutsService {
   constructor(
-    @InjectModel(Cut.name) private cutsModel: Model<CutDocument>
-  ) {}
+    @InjectModel(Cut.name) private cutsModel: Model<CutDocument>,
+    @InjectModel(Article.name) private articlesModel: Model<ArticleDocument>,
+    @InjectModel(CustomArticle.name) private customArticlesModel: Model<CustomArticleDocument>,
+
+  ) { }
 
   async createCut(cut: CreateCutDto): Promise<Cut | undefined> {
-    const {order, ...rest} = cut
-    return this.cutsModel.create({order: new Types.ObjectId(order), ...rest})
+    const { order, ...rest } = cut
+    return this.cutsModel.create({ order: new Types.ObjectId(order), ...rest })
   }
 
   async createCutFromOrder(order: any): Promise<Cut | undefined> {
@@ -28,7 +34,7 @@ export class CutsService {
   }
 
   async getCutFromOrder(orderId: string | Types.ObjectId): Promise<Cut | undefined> {
-    return this.cutsModel.findOne({order: orderId})
+    return this.cutsModel.findOne({ order: orderId })
   }
 
   async getCuts(): Promise<Cut[] | undefined> {
@@ -43,6 +49,14 @@ export class CutsService {
       },
       {
         $unwind: '$orderDetails'
+      },
+      {
+        $lookup: {
+          from: 'workshoporders',
+          localField: '_id',
+          foreignField: 'cut',
+          as: 'workshopOrders'
+        }
       },
       {
         $addFields: {
@@ -67,12 +81,29 @@ export class CutsService {
       },
       {
         $addFields: {
-          order: '$orderDetails'
+          order: '$orderDetails',
+          // Extrae el primer workshopOrder o null
+          workshopOrder: {
+            $arrayElemAt: ['$workshopOrders', 0]
+          }
+        }
+      },
+      {
+        $addFields: {
+          // Condicionalmente elimina la propiedad si no hay workshopOrder
+          workshopOrder: {
+            $cond: {
+              if: { $ne: ['$workshopOrder', null] }, // Solo incluye si no es null
+              then: '$workshopOrder',
+              else: '$$REMOVE' // No incluye la propiedad
+            }
+          }
         }
       },
       {
         $project: {
           orderDetails: 0,
+          workshopOrders: 0,
           filteredArticles: 0
         }
       }
@@ -82,22 +113,77 @@ export class CutsService {
   }
 
   async getCut(id: string): Promise<Cut | undefined> {
-    let cut = await this.cutsModel.findOne({ _id: id });
+    let cut = (await this.cutsModel.aggregate([
+      {
+        $match: {
+          "_id": new Types.ObjectId(id)
+        }
+      },
+      {
+        $lookup: {
+          from: 'workshoporders',
+          localField: '_id',
+          foreignField: 'cut',
+          as: 'workshopOrders'
+        }
+      },
+      {
+        $lookup: {
+          from: 'orders',
+          localField: 'order',
+          foreignField: '_id',
+          as: 'order'
+        }
+      },
+      {
+        $unwind: '$order'
+      },
+      {
+        $addFields: {
+          workshopOrder: {
+            $arrayElemAt: ['$workshopOrders', 0]
+          }
+        }
+      },
+      {
+        $addFields: {
+          workshopOrder: {
+            $cond: {
+              if: { $ne: ['$workshopOrder', null] },
+              then: '$workshopOrder',
+              else: '$$REMOVE'
+            }
+          }
+        }
+      },
+      {
+        $project: {
+          workshopOrders: 0
+        }
+      }
+    ]))[0]
 
-    if (cut) {
-        cut = await cut.populate({
-            path: 'order',
-            populate: [
-                {
-                    path: 'articles.article',
-                },
-                {
-                    path: 'articles.customArticle',
-                },
-            ],
-        });
+    if (cut?.order?.articles) {
+      const populatedArticles = await Promise.all(cut?.order?.articles?.map(async article => {
+        const returnObj = {...article}
+        const commonArticle = await this.articlesModel.findOne({_id: article?.article})
+        const customArticle = await this.customArticlesModel.findOne({_id: article?.customArticle})
+        
+        if (commonArticle) {
+          returnObj["article"] = commonArticle
+        }
+        
+        if (customArticle) {
+          returnObj["customArticle"] = customArticle
+        }
+        
+        return returnObj
+      }))
+
+      cut.order.articles = populatedArticles
     }
 
+    
     return cut;
   }
 }

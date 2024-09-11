@@ -42,6 +42,10 @@ export class ArticlesService {
     return this.articleModel.findOneAndUpdate({_id: id}, {$set: {stock}}, {new: true})
   }
 
+  async getCustomArticle(id: string): Promise<Article> {
+    return this.customArticleModel.findOne({_id: id})
+  }
+
   async createCustomArticle(article: CreateCustomArticleDto): Promise<CustomArticle | undefined> {
     return this.customArticleModel.create(article)
   }
