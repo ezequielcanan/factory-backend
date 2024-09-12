@@ -4,15 +4,26 @@ import { WorkshopOrderService } from './workshop-order.service';
 import { MongooseModule } from '@nestjs/mongoose';
 import { WorkshopOrder, WorkshopOrderSchema } from './schema/workshop-order.schema';
 import { Workshop, WorkshopSchema } from 'src/workshops/schema/workshops.schema';
+import { ArticlesService } from 'src/articles/articles.service';
+import { OrdersService } from 'src/orders/orders.service';
+import { Article, ArticleSchema } from 'src/articles/schema/articles.schema';
+import { CustomArticle, CustomArticleSchema } from 'src/articles/schema/customArticle.schema';
+import { Order, OrderSchema } from 'src/orders/schemas/orders.schema';
+import { CutsService } from 'src/cuts/cuts.service';
+import { Cut, CutsSchema } from 'src/cuts/schema/cuts.schema';
 
 @Module({
   imports: [
     MongooseModule.forFeature([
       {name: WorkshopOrder.name, schema: WorkshopOrderSchema},
-      {name: Workshop.name, schema: WorkshopSchema}
+      {name: Workshop.name, schema: WorkshopSchema},
+      {name: Article.name, schema: ArticleSchema},
+      {name: CustomArticle.name, schema: CustomArticleSchema},
+      {name: Order.name, schema: OrderSchema},
+      {name: Cut.name, schema: CutsSchema},
     ])
   ],
   controllers: [WorkshopOrderController],
-  providers: [WorkshopOrderService]
+  providers: [WorkshopOrderService, ArticlesService, OrdersService, CutsService]
 })
 export class WorkshopOrderModule {}

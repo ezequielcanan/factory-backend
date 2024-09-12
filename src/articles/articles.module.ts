@@ -33,6 +33,7 @@ import { CutsService } from 'src/cuts/cuts.service';
     ConfigModule
   ],
   providers: [ArticlesService, OrdersService, CutsService],
-  controllers: [ArticlesController]
+  controllers: [ArticlesController],
+  exports: [ArticlesService]
 })
 export class ArticlesModule {}
