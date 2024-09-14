@@ -12,8 +12,14 @@ export class CutsController {
     return this.cutsService.getCuts()
   }
 
+  @Get("/finished")
+  async getFinishedCuts() {
+    return this.cutsService.getFinishedCuts()
+  }
+  
   @Get("/:id")
   async getCut(@Param("id") id: string) {
     return this.cutsService.getCut(id)
   }
+
 }

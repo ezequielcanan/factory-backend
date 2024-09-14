@@ -7,6 +7,8 @@ import { Order } from 'src/orders/schemas/orders.schema';
 import { Article, ArticleDocument } from 'src/articles/schema/articles.schema';
 import { ArticlesService } from 'src/articles/articles.service';
 import { CustomArticle, CustomArticleDocument } from 'src/articles/schema/customArticle.schema';
+import { Item } from 'src/orders/schemas/item.schema';
+import { Type } from 'class-transformer';
 
 @Injectable()
 export class CutsService {
@@ -33,8 +35,43 @@ export class CutsService {
     }
   }
 
+  async insertItems(id: string | Types.ObjectId, items: Item[]): Promise<Cut | undefined> {
+    return this.cutsModel.findOneAndUpdate({_id: new Types.ObjectId(id)}, {$set: {items}}, {new: true})
+  }
+
   async getCutFromOrder(orderId: string | Types.ObjectId): Promise<Cut | undefined> {
     return this.cutsModel.findOne({ order: orderId })
+  } 
+
+  async getCutWithPopulatedArticles(cut, inOrder = true): Promise<any> {
+    let articles = (inOrder ? cut?.order?.articles : cut?.items)
+    if (articles) {
+      const populatedArticles = await Promise.all(articles?.map(async article => {
+        const returnObj = { ...article }
+        const commonArticle = await this.articlesModel.findOne({ _id: article?.article })
+        const customArticle = await this.customArticlesModel.findOne({ _id: article?.customArticle })
+
+        if (commonArticle) {
+          returnObj["article"] = commonArticle
+        }
+
+        if (customArticle) {
+          returnObj["customArticle"] = customArticle
+        }
+
+        return returnObj
+      }))
+
+      if (inOrder) {cut.order.articles = populatedArticles} else {cut.items = populatedArticles}
+    }
+
+    return cut
+  }
+
+  async getCutsWithPopulatedArticles(cuts, inOrder = true): Promise<any> {
+    return Promise.all(cuts?.map(async cut => {
+      return await this.getCutWithPopulatedArticles(cut, inOrder)
+    }))
   }
 
   async getCuts(): Promise<Cut[] | undefined> {
@@ -90,12 +127,11 @@ export class CutsService {
       },
       {
         $addFields: {
-          // Condicionalmente elimina la propiedad si no hay workshopOrder
           workshopOrder: {
             $cond: {
-              if: { $ne: ['$workshopOrder', null] }, // Solo incluye si no es null
+              if: { $ne: ['$workshopOrder', null] },
               then: '$workshopOrder',
-              else: '$$REMOVE' // No incluye la propiedad
+              else: '$$REMOVE'
             }
           }
         }
@@ -109,7 +145,14 @@ export class CutsService {
       }
     ])
 
-    return cutsWithArticlesToCut
+    const finalCuts = await this.getCutsWithPopulatedArticles(cutsWithArticlesToCut)
+
+    return finalCuts
+  }
+
+  async getFinishedCuts(): Promise<Cut[] | undefined> {
+    const cuts = await this.cutsModel.find({'items.0': {$exists: true}})
+    return await this.getCutsWithPopulatedArticles(cuts, false)
   }
 
   async getCut(id: string): Promise<Cut | undefined> {
@@ -163,27 +206,6 @@ export class CutsService {
       }
     ]))[0]
 
-    if (cut?.order?.articles) {
-      const populatedArticles = await Promise.all(cut?.order?.articles?.map(async article => {
-        const returnObj = {...article}
-        const commonArticle = await this.articlesModel.findOne({_id: article?.article})
-        const customArticle = await this.customArticlesModel.findOne({_id: article?.customArticle})
-        
-        if (commonArticle) {
-          returnObj["article"] = commonArticle
-        }
-        
-        if (customArticle) {
-          returnObj["customArticle"] = customArticle
-        }
-        
-        return returnObj
-      }))
-
-      cut.order.articles = populatedArticles
-    }
-
-    
-    return cut;
+    return await this.getCutWithPopulatedArticles(cut, !cut?.items?.length)
   }
 }

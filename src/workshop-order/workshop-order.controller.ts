@@ -8,6 +8,11 @@ export class WorkshopOrderController {
     private readonly workshopOrderService: WorkshopOrderService
   ) {}
 
+  @Get()
+  async getWorkshopOrders() {
+    return this.workshopOrderService.getWorkshopOrders()
+  }
+
   @Get("/:id")
   async getWorkshopOrder(@Param() id: string) {
     return this.workshopOrderService.getWorkshopOrder(id)

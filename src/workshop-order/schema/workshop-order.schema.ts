@@ -29,4 +29,10 @@ WorkshopOrderSchema.pre("findOne", function (next) {
   next()
 })
 
+WorkshopOrderSchema.pre("find", function (next) {
+  this.populate('cut')
+  this.populate('workshop')
+  next()
+})
+
 export type WorkshopOrderDocument = HydratedDocument<WorkshopOrder>
