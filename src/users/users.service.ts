@@ -21,5 +21,9 @@ export class UsersService {
     const findObj = {}
     findObj[field] = username
     return this.userModel.findOne(findObj)
-  } 
+  }
+
+  async getUsers(): Promise<User[] | undefined> {
+    return this.userModel.find()
+  }
 }

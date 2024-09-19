@@ -25,6 +25,9 @@ export class AuthService {
   }
 
   async register(user: RegisterDto) {
-    await this.usersService.createUser(user)
+    const existsUser = await this.usersService.findUser(user?.email, "email")
+    if (!existsUser) {
+      return await this.usersService.createUser(user)
+    }
   }
 }
