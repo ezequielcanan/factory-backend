@@ -9,6 +9,8 @@ import { OrdersService } from 'src/orders/orders.service';
 import { Order, OrderSchema } from 'src/orders/schemas/orders.schema';
 import { Cut, CutsSchema } from 'src/cuts/schema/cuts.schema';
 import { CutsService } from 'src/cuts/cuts.service';
+import { UsersService } from 'src/users/users.service';
+import { User, UserSchema } from 'src/users/schema/users.schema';
 
 @Module({
   imports: [
@@ -28,11 +30,15 @@ import { CutsService } from 'src/cuts/cuts.service';
       {
         name: Cut.name,
         schema: CutsSchema
+      },
+      {
+        name: User.name,
+        schema: UserSchema
       }
     ]),
     ConfigModule
   ],
-  providers: [ArticlesService, OrdersService, CutsService],
+  providers: [ArticlesService, OrdersService, CutsService, UsersService],
   controllers: [ArticlesController],
   exports: [ArticlesService]
 })

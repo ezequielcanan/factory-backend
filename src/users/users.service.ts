@@ -1,7 +1,7 @@
 import { Injectable, Param } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { User, UserDocument } from './schema/users.schema';
-import { Model } from 'mongoose';
+import { Model, Types } from 'mongoose';
 import * as bcrypt from "bcrypt"
 import { RegisterDto } from 'src/auth/dto/register.dto';
 
@@ -21,6 +21,10 @@ export class UsersService {
     const findObj = {}
     findObj[field] = username
     return this.userModel.findOne(findObj)
+  }
+
+  async findOneById(id: string): Promise<User | undefined> {
+    return this.userModel.findOne({_id: new Types.ObjectId(id)})
   }
 
   async getUsers(): Promise<User[] | undefined> {
