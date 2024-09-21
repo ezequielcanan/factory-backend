@@ -21,10 +21,9 @@ export class RolesGuard implements CanActivate {
     const foundUser = await this.usersService.findOneById(user._id)
     
     if (!foundUser) {
-      return false; // Si no se encuentra el usuario, denegar acceso
+      return false
     }
 
-    // Verificar si el usuario tiene al menos uno de los roles requeridos
-    return requiredRoles.some((role) => foundUser.roles?.includes(role));
+    return (requiredRoles.some((role) => foundUser.roles?.includes(role)) || foundUser.roles?.includes(Role.Admin))
   }
 }

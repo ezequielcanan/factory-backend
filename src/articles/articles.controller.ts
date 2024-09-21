@@ -10,6 +10,7 @@ import { Role } from 'src/auth/enums/role.enum';
 
 @Controller('articles')
 @UseGuards(JwtAuthGuard, RolesGuard)
+@Roles(Role.Prices, Role.Orders)
 export class ArticlesController {
   constructor(
     private readonly articlesService: ArticlesService,
@@ -25,7 +26,6 @@ export class ArticlesController {
     return this.articlesService.createCustomArticles(articles)
   }
 
-  @Roles(Role.Admin)
   @Get()
   async getArticles() {
     return this.articlesService.getArticles()

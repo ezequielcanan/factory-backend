@@ -6,10 +6,11 @@ import { Role } from './enums/role.enum';
 import { JwtAuthGuard } from './guards/jwt.guard';
 import { RolesGuard } from './guards/roles.guard';
 import { Roles } from './decorators/roles.decorator';
+import { UsersService } from 'src/users/users.service';
 
 @Controller('auth')
 export class AuthController {
-  constructor(private authService: AuthService) {}
+  constructor(private authService: AuthService, private usersService: UsersService) {}
 
   @Post("register")
   async register(@Body() user: RegisterDto) {
@@ -22,10 +23,9 @@ export class AuthController {
     return this.authService.login(req.user?._doc);
   }
 
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  //@Roles(Role.User, Role.Admin, null)
+  @UseGuards(JwtAuthGuard)
   @Get("current")
   async current(@Request() req: any) {
-    return req?.user
+    return this.usersService.findOneById(req?.user?._id)
   }
 }
