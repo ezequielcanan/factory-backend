@@ -1,6 +1,9 @@
 export enum Role {
   Orders = 'orders',
-  Workshops = 'workshops',
+  Cuts = 'cuts',
   Admin = 'admin',
-  Prices = "prices"
+  Prices = "prices",
+  Articles = "articles",
+  Clients = "clients",
+  Workshops = "workshops"
 }

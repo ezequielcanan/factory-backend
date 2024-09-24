@@ -11,6 +11,7 @@ import { CustomArticle, CustomArticleSchema } from 'src/articles/schema/customAr
 import { Order, OrderSchema } from 'src/orders/schemas/orders.schema';
 import { CutsService } from 'src/cuts/cuts.service';
 import { Cut, CutsSchema } from 'src/cuts/schema/cuts.schema';
+import { Client, ClientSchema } from 'src/clients/schema/clients.schema';
 
 @Module({
   imports: [
@@ -21,6 +22,7 @@ import { Cut, CutsSchema } from 'src/cuts/schema/cuts.schema';
       {name: CustomArticle.name, schema: CustomArticleSchema},
       {name: Order.name, schema: OrderSchema},
       {name: Cut.name, schema: CutsSchema},
+      {name: Client.name, schema: ClientSchema},
     ])
   ],
   controllers: [WorkshopOrderController],

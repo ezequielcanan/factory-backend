@@ -11,6 +11,8 @@ import { Cut, CutsSchema } from 'src/cuts/schema/cuts.schema';
 import { CutsService } from 'src/cuts/cuts.service';
 import { UsersService } from 'src/users/users.service';
 import { User, UserSchema } from 'src/users/schema/users.schema';
+import { Client, ClientSchema } from 'src/clients/schema/clients.schema';
+import { WorkshopOrder, WorkshopOrderSchema } from 'src/workshop-order/schema/workshop-order.schema';
 
 @Module({
   imports: [
@@ -34,6 +36,14 @@ import { User, UserSchema } from 'src/users/schema/users.schema';
       {
         name: User.name,
         schema: UserSchema
+      },
+      {
+        name: Client.name,
+        schema: ClientSchema
+      },
+      {
+        name: WorkshopOrder.name,
+        schema: WorkshopOrderSchema
       }
     ]),
     ConfigModule

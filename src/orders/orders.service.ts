@@ -7,12 +7,18 @@ import { CreateOrderDto } from './dto/create-order.dto';
 import { CutsService } from 'src/cuts/cuts.service';
 import { ArticlesService } from 'src/articles/articles.service';
 import { Article, ArticleDocument } from 'src/articles/schema/articles.schema';
+import { CustomArticle, CustomArticleDocument } from 'src/articles/schema/customArticle.schema';
+import { Client, ClientDocument } from 'src/clients/schema/clients.schema';
+import { WorkshopOrder, WorkshopOrderDocument } from 'src/workshop-order/schema/workshop-order.schema';
 
 @Injectable()
 export class OrdersService {
   constructor(
     @InjectModel(Order.name) private orderModel: Model<OrderDocument>,
+    @InjectModel(Client.name) private clientModel: Model<ClientDocument>,
     @InjectModel(Article.name) private articlesModel: Model<ArticleDocument>,
+    @InjectModel(CustomArticle.name) private customArticlesModel: Model<CustomArticleDocument>,
+    @InjectModel(WorkshopOrder.name) private workshopOrdersModel: Model<WorkshopOrderDocument>,
     private readonly cutsService: CutsService
   ) { }
 
@@ -42,13 +48,49 @@ export class OrdersService {
     return { order, cut }
   }
 
-  async getOrders(society: string): Promise<Order[] | undefined> {
-    if (society) { 
+  async getOrders(society: string): Promise<any | undefined> {
+    /*if (society) { 
       return this.orderModel.find({society}).populate("client").populate("articles.article").populate("articles.customArticle")
     } else {
       return this.orderModel.find().populate("client").populate("articles.article").populate("articles.customArticle")
+    }*/
+    const matchObj = {$match: {}}
+    if (society) {
+      matchObj["$match"]["society"] = society
     }
+    const result = await this.orderModel.aggregate([
+      matchObj,
+      {
+        $lookup: {
+          from: "cuts",
+          localField: "_id",
+          foreignField: "order",
+          as: "cut"
+        }
+      },
+      {
+        $unwind: { path: "$cut", preserveNullAndEmptyArrays: true },
+      }
+    ])
+
+    await Promise.all(result.map(async order => {
+      const articles = await Promise.all(order?.articles?.map(async article => {
+        const art = article?.customArticle ? await this.customArticlesModel.findOne({_id: article?.customArticle}) : await this.articlesModel.findOne({_id: article?.article})
+        const artObj = {}
+        artObj[article?.customArticle ? "customArticle" : "article"] = art
+        return {...article, ...artObj}
+      }))
+
+      const orderIndex = result.findIndex(o => o?._id == order?._id)
+      const client = await this.clientModel.findOne({_id: order?.client})
+      const workshop = await this.workshopOrdersModel.findOne({cut: order?.cut?._id})
+      result[orderIndex].workshop = workshop
+      result[orderIndex].articles = articles
+      result[orderIndex].client = client
+    }))
+    return result
   }
+  
 
   async createOrder(order: CreateOrderDto): Promise<Order | undefined> {
     let { client, articles, ...rest } = order

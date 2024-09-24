@@ -9,6 +9,7 @@ import { ArticlesService } from 'src/articles/articles.service';
 import { CustomArticle, CustomArticleDocument } from 'src/articles/schema/customArticle.schema';
 import { Item } from 'src/orders/schemas/item.schema';
 import { Type } from 'class-transformer';
+import { WorkshopOrder, WorkshopOrderDocument } from 'src/workshop-order/schema/workshop-order.schema';
 
 @Injectable()
 export class CutsService {
@@ -16,6 +17,7 @@ export class CutsService {
     @InjectModel(Cut.name) private cutsModel: Model<CutDocument>,
     @InjectModel(Article.name) private articlesModel: Model<ArticleDocument>,
     @InjectModel(CustomArticle.name) private customArticlesModel: Model<CustomArticleDocument>,
+    @InjectModel(WorkshopOrder.name) private workshopOrderModel: Model<WorkshopOrderDocument>,
 
   ) { }
 
@@ -147,11 +149,19 @@ export class CutsService {
 
     const finalCuts = await this.getCutsWithPopulatedArticles(cutsWithArticlesToCut)
 
-    return finalCuts
+    return finalCuts.filter(c => !c?.workshopOrder)
   }
 
   async getFinishedCuts(): Promise<Cut[] | undefined> {
-    const cuts = await this.cutsModel.find({'items.0': {$exists: true}})
+    const cuts = await this.cutsModel.find()
+    const workshopOrders = await this.workshopOrderModel.find()
+    workshopOrders.forEach(w => {
+      const cutIndex = cuts.findIndex(c => String(c?._id) == String(w?.cut?._id))
+      if (cutIndex == -1) {
+        cuts.splice(cutIndex, 1)
+      }
+    })
+    
     return await this.getCutsWithPopulatedArticles(cuts, false)
   }
 

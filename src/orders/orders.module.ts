@@ -10,6 +10,8 @@ import { CustomArticle, CustomArticleSchema } from 'src/articles/schema/customAr
 import { ArticlesService } from 'src/articles/articles.service';
 import { Cut, CutsSchema } from 'src/cuts/schema/cuts.schema';
 import { CutsService } from 'src/cuts/cuts.service';
+import { Client, ClientSchema } from 'src/clients/schema/clients.schema';
+import { WorkshopOrder, WorkshopOrderSchema } from 'src/workshop-order/schema/workshop-order.schema';
 
 @Module({
   imports: [
@@ -19,6 +21,8 @@ import { CutsService } from 'src/cuts/cuts.service';
       {name: Cut.name, schema: CutsSchema},
       {name: Article.name, schema: ArticleSchema},
       {name: CustomArticle.name, schema: CustomArticleSchema},
+      {name: Client.name, schema: ClientSchema},
+      {name: WorkshopOrder.name, schema: WorkshopOrderSchema},
     ]),
     ConfigModule
   ],
