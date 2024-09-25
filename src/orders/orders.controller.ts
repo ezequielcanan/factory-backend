@@ -65,4 +65,11 @@ export class OrdersController {
     const result = await this.ordersService.updateArticleCut(oid, aid, custom)
     return result
   }
+
+  @Put("/price/:oid/:aid")
+  async updateArticleUnitPrice(@Param() params: { oid: string, aid: string }, @Query("custom") custom: string, @Query("price") price: string) {
+    const {oid, aid} = params
+    const result = await this.ordersService.updateArticleUnitPrice(oid, aid, custom, price)
+    return result
+  }
 }

@@ -221,4 +221,23 @@ export class OrdersService {
 
     return result;
   }
+
+  async updateArticleUnitPrice(oid: string, aid: string, custom: string, price: string): Promise<any> {
+    const order = await this.getOrder(oid)
+
+    const findObj = this.getFindObjForArticle(oid, aid, custom)
+    const setObj = {
+      $set: {
+        "articles.$.price": Number(price)
+      }
+    }
+
+    const result = await this.orderModel.findOneAndUpdate(
+      findObj,
+      setObj,
+      {new: true}
+    );
+
+    return result;
+  }
 }
