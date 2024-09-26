@@ -16,8 +16,8 @@ export class OrdersController {
 
   
   @Get()
-  async getOrders(@Query("society") society: string) {
-    return this.ordersService.getOrders(society)
+  async getOrders(@Query("society") society: string, @Query("page") page: string, @Query("finished") finished: string) {
+    return this.ordersService.getOrders(society, page, finished)
   }
 
   @Get("/:id")
@@ -71,5 +71,23 @@ export class OrdersController {
     const {oid, aid} = params
     const result = await this.ordersService.updateArticleUnitPrice(oid, aid, custom, price)
     return result
+  }
+
+  @Put("/finish/:id")
+  async finishOrder(@Param("id") id: string) {
+    const order = await this.ordersService.finishOrder(id)
+    await Promise.all(order?.articles?.map(async article => {
+      if (!article?.customArticle) {
+        const stockArticle = await this.articlesService.getArticle(article?.article?._id)
+        await this.articlesService.updateStock((stockArticle?.stock - article?.booked) < 0 ? 0 : (stockArticle?.stock - article?.booked), article?.article?._id)
+      }
+    }))
+    return order
+  }
+
+  @Put("/paid/:id")
+  async changePaidAmount(@Param("id") id: string, @Query("paid") paid: string) {
+    const order = await this.ordersService.updatePaidAmount(id, paid)
+    return order
   }
 }

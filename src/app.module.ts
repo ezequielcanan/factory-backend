@@ -14,6 +14,7 @@ import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'path';
 import { WorkshopsModule } from './workshops/workshops.module';
 import { WorkshopOrderModule } from './workshop-order/workshop-order.module';
+import { PdfModule } from './pdf/pdf.module';
 
 @Module({
   imports: [
@@ -38,7 +39,8 @@ import { WorkshopOrderModule } from './workshop-order/workshop-order.module';
     UsersModule,
     UploadfilesModule,
     WorkshopsModule,
-    WorkshopOrderModule
+    WorkshopOrderModule,
+    PdfModule
   ],
   controllers: [AppController],
   providers: [AppService],

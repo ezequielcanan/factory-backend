@@ -30,7 +30,7 @@ export class ArticlesService {
     return newArticles
   }
 
-  async getArticle(id: string): Promise<Article> {
+  async getArticle(id: string | Types.ObjectId): Promise<Article> {
     return this.articleModel.findOne({_id: id})
   }
 
@@ -38,7 +38,7 @@ export class ArticlesService {
     return this.articleModel.findOneAndUpdate({_id: id}, {$set: article}, {new: true})
   }
 
-  async updateStock(stock: number, id: string): Promise<Article | undefined> {
+  async updateStock(stock: number, id: string | Types.ObjectId): Promise<Article | undefined> {
     return this.articleModel.findOneAndUpdate({_id: id}, {$set: {stock}}, {new: true})
   }
 

@@ -48,16 +48,19 @@ export class OrdersService {
     return { order, cut }
   }
 
-  async getOrders(society: string): Promise<any | undefined> {
-    /*if (society) { 
-      return this.orderModel.find({society}).populate("client").populate("articles.article").populate("articles.customArticle")
-    } else {
-      return this.orderModel.find().populate("client").populate("articles.article").populate("articles.customArticle")
-    }*/
+  async getOrders(society: string, page: string, finished: string): Promise<any | undefined> {
+    const limit = 25
+    const skip = (Number(page) - 1) * limit
+
     const matchObj = {$match: {}}
     if (society) {
       matchObj["$match"]["society"] = society
     }
+
+    if (finished) {
+      matchObj["$match"]["finished"] = true;
+    }
+
     const result = await this.orderModel.aggregate([
       matchObj,
       {
@@ -70,6 +73,18 @@ export class OrdersService {
       },
       {
         $unwind: { path: "$cut", preserveNullAndEmptyArrays: true },
+      },
+      {
+        $sort: {
+          "finished": 1,
+          "orderNumber": -1
+        }
+      },
+      {
+        $skip: skip
+      },
+      {
+        $limit: limit
       }
     ])
 
@@ -239,5 +254,13 @@ export class OrdersService {
     );
 
     return result;
+  }
+
+  async finishOrder(id: string): Promise<Order | undefined> {
+    return this.orderModel.findOneAndUpdate({_id: id}, {finished: true, finalDate: new Date()}, {new: true})
+  }
+
+  async updatePaidAmount(id: string, paid: string): Promise<Order | undefined> {
+    return this.orderModel.findOneAndUpdate({_id: id}, {paid: Number(paid)}, {new: true})
   }
 }

@@ -28,6 +28,12 @@ export class Order {
 
   @Prop()
   extraInfo: string
+
+  @Prop()
+  paid: number
+
+  @Prop()
+  finalDate: Date
 }
 
 export const OrderSchema = SchemaFactory.createForClass(Order)
