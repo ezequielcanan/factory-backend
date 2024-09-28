@@ -2,9 +2,98 @@ import { Controller, Get, Param, Res } from '@nestjs/common';
 import { Response } from 'express';
 import { ClientsService } from 'src/clients/clients.service';
 import { OrdersService } from 'src/orders/orders.service';
+import * as xl from 'excel4node'
 import * as PDFDocument from 'pdfkit';
 import * as moment from 'moment'
 import 'moment/locale/es'
+
+const fontHeadStyle = {
+  font: {
+    size: 18,
+    bold: true,
+    color: "#FFFFFF"
+  }
+}
+
+const textCenterStyle = {
+  alignment: {
+    horizontal: 'center',
+    vertical: 'center',
+    wrapText: true
+  },
+
+}
+
+const boldBorder = {
+  border: {
+    left: {
+      style: 'medium',
+      color: 'black',
+    },
+    right: {
+      style: 'medium',
+      color: 'black',
+    },
+    top: {
+      style: 'medium',
+      color: 'black',
+    },
+    bottom: {
+      style: 'medium',
+      color: 'black',
+    },
+    outline: false,
+  }
+}
+
+const thinBorder = {
+  border: {
+    left: {
+      style: 'thin',
+      color: 'black',
+    },
+    right: {
+      style: 'thin',
+      color: 'black',
+    },
+    top: {
+      style: 'thin',
+      color: 'black',
+    },
+    bottom: {
+      style: 'thin',
+      color: 'black',
+    },
+    outline: false,
+  }
+}
+
+const bgHead = {
+  fill: {
+    type: "pattern",
+    patternType: "solid",
+    bgColor: "#516480",
+    fgColor: "#516480"
+  }
+}
+
+const bgSectionHead = {
+  fill: {
+    type: "pattern",
+    patternType: "solid",
+    bgColor: "#8497B0",
+    fgColor: "#8497B0"
+  }
+}
+
+const bgSectionInfo = {
+  fill: {
+    type: "pattern",
+    patternType: "solid",
+    bgColor: "#b7daf6",
+    fgColor: "#b7daf6"
+  }
+}
 
 moment.locale('es');
 
@@ -129,5 +218,73 @@ export class PdfController {
     doc.text("Realizado el " + moment().format('D [de] MMMM [del] YYYY HH:mm'), percentageOfPageX(5), percentageOfPageY(90))
 
     doc.end();
+  }
+
+
+  @Get('/cc/:cid')
+  async generateClientExcel(@Param("cid") cid: string, @Res() res: Response) {
+    const orders = await this.ordersService.getOrdersByClient(cid)
+    const client = await this.clientsService.getClient(cid)
+
+    const wb = new xl.Workbook()
+    const ws = wb.addWorksheet("CUENTA CORRIENTE", {
+      sheetFormat: {
+        'defaultColWidth': 35,
+        'defaultRowHeight': 30,
+      }
+    })
+    
+    const styles = {
+      sectionHead: wb.createStyle({
+        ...fontHeadStyle,
+        ...textCenterStyle,
+        ...boldBorder,
+        ...bgHead,
+        numberFormat: '#,##0.00; -#,##0.00; -'
+      }),
+      importantCell: wb.createStyle({
+        font: {
+          bold: true
+        },
+        ...textCenterStyle,
+        ...thinBorder,
+        ...bgSectionInfo,
+        numberFormat: '#,##0.00; -#,##0.00; -'
+      }),
+      cell: wb.createStyle({
+        ...textCenterStyle,
+        ...thinBorder,
+        numberFormat: '#,##0.00; -#,##0.00; -'
+      })
+    }
+
+    ws.cell(1, 1, 1, 4, true).string(`Cuenta corriente ${client?.name}`).style(styles["sectionHead"])
+    const dateCol = 1
+    const motivoCol = 2
+    const amountCol = 3
+    const totalCol = 4
+
+    ws.cell(2, dateCol).string(`FECHA`).style(styles["importantCell"])
+    ws.cell(2, motivoCol).string(`MOTIVO`).style(styles["importantCell"])
+    ws.cell(2, amountCol).string(`MONTO`).style(styles["importantCell"])
+    ws.cell(2, totalCol).string(`TOTAL`).style(styles["importantCell"])
+
+    console.log(orders)
+    orders.forEach((order, i) => {
+      console.log(order?.finalDate)
+      const row = 3+(i*2)
+      ws.cell(row,dateCol).string(moment(order?.finalDate).format("DD-MM-YYYY")).style(styles["cell"])
+      ws.cell(row,motivoCol).string(`Pedido N° ${order?.orderNumber}`).style(styles["cell"])
+      ws.cell(row,amountCol).number(order?.articles?.reduce((acc,art) => acc+((art?.booked || 0) * (art?.price || 0)), 0)).style(styles["cell"])
+      ws.cell(row,totalCol).formula(`+${i ? xl.getExcelCellRef(row-1,totalCol) : "0"} + ${xl.getExcelCellRef(row,amountCol)}`).style(styles["cell"])
+
+      const paymentRow = row+1
+      ws.cell(paymentRow,dateCol).string(moment(order?.finalDate).format("DD-MM-YYYY")).style(styles["cell"])
+      ws.cell(paymentRow,motivoCol).string(`Pago pedido N° ${order?.orderNumber}`).style(styles["cell"])
+      ws.cell(paymentRow,amountCol).number(order?.paid || 0).style(styles["cell"])
+      ws.cell(paymentRow,totalCol).formula(`+${xl.getExcelCellRef(paymentRow-1,totalCol)} - ${xl.getExcelCellRef(paymentRow,amountCol)}`).style(styles["cell"])
+    })
+
+    wb.write(`Cuenta corriente ${client?.name || ""}.xlsx`, res)
   }
 }

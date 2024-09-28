@@ -48,6 +48,10 @@ export class OrdersService {
     return { order, cut }
   }
 
+  async getOrdersByClient(cid: string): Promise<Order[] | undefined> {
+    return this.orderModel.find({client: new Types.ObjectId(cid)})
+  }
+
   async getOrders(society: string, page: string, finished: string): Promise<any | undefined> {
     const limit = 25
     const skip = (Number(page) - 1) * limit
