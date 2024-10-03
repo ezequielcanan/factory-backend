@@ -111,6 +111,39 @@ export class PdfController {
     private readonly ordersService: OrdersService
   ) {}
 
+  @Get('/1/:oid')
+  async generateWhitePdf(@Param("oid") oid: string, @Res() res: Response) {
+    
+    // ENCABEZADO -------------------------------------------------------
+
+    const order = await this.ordersService.getOrder(oid)
+    const doc = new PDFDocument({size: "A4"});
+
+    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader('Content-Disposition', `attachment; filename=Presupuesto N°${order?.orderNumber}.pdf`);
+
+    const mainColor = order?.society == "Arcan" ? "#5357a1" : "#6b204e"
+
+    doc.pipe(res)
+    doc.fill("#000000").font(`${assetsPath}/fonts/Montserrat-SemiBold.ttf`).fontSize(6).text(order?.client["name"], percentageOfPageX(16.5), percentageOfPageY(9.59))
+    doc.text(order?.client["address"], percentageOfPageX(16.5), percentageOfPageY(11))
+    doc.text(order?.client["expreso"], percentageOfPageX(16.5), percentageOfPageY(13.95))
+    doc.text(order?.client["expresoAddress"], percentageOfPageX(16.5), percentageOfPageY(15.55))
+
+    doc.text(moment().format("DD"), percentageOfPageX(49), percentageOfPageY(4.85))
+    doc.text(moment().format("MM"), percentageOfPageX(54), percentageOfPageY(4.85))
+    doc.text(moment().format("YYYY"), percentageOfPageX(62), percentageOfPageY(4.85))
+
+
+    const padding = 1.2
+    order?.articles?.forEach((article, i) => {
+      doc.text(article?.quantity, percentageOfPageX(11), percentageOfPageY(20 + padding * i))
+      doc.text(article?.article ? article?.article["description"] : article?.customArticle["detail"], percentageOfPageX(28.5), percentageOfPageY(20 + padding * i))
+    })
+
+    doc.end();
+  }
+
   @Get('/2/:oid')
   async generatePdf(@Param("oid") oid: string, @Res() res: Response) {
     
@@ -171,11 +204,11 @@ export class PdfController {
       doc.save().moveTo(xTable, yRow).lineTo(percentageOfPageX(100-firstXTable), yRow).lineTo(percentageOfPageX(100-firstXTable), percentageOfPageY(firstYTable+(!i ? 5 : 5 + 7 * i)+7)).lineTo(xTable, percentageOfPageY(firstYTable+(!i ? 5 : 5 + 7 * i)+7)).fill(i % 2 ? "#CCCCCC" : "#EEEEEE")
       
       const texts = [
-        {value: article?.booked},
+        {value: article?.quantity},
         {notText: true, value: `./uploads/articles/${article?.customArticle ? "custom/" : ""}${article?.article?._id || article?.customArticle?._id}/thumbnail.png`},
         {value: article?.article ? article?.article["description"] : article?.customArticle["detail"]},
         {value: article?.price || 0},
-        {value: (article?.price || 0) * (article?.booked || 0)}
+        {value: (article?.price || 0) * (article?.quantity || 0)}
       ]
 
       texts.forEach((text, iText) => {
@@ -192,7 +225,7 @@ export class PdfController {
       finalY = percentageOfPageY(firstYTable+(!i ? 5 : 5 + 7 * i)+7)
     })
 
-    const totalString = `Total: $${order?.articles?.reduce((acc,art) => acc+((art?.price || 0) * (art?.booked || 0)),0)}`
+    const totalString = `Total: $${order?.articles?.reduce((acc,art) => acc+((art?.price || 0) * (art?.quantity || 0)),0)}`
 
     const textWidth = doc.fill("#000000").font(`${assetsPath}/fonts/Montserrat-ExtraBold.ttf`).fontSize(18).widthOfString(totalString);
 
@@ -203,7 +236,7 @@ export class PdfController {
     // PIE ------------------------------------------------------------
 
     const pageWidth = doc.page.width
-    const textsFooter = ["Administracion y ventas", "arcan.ventas@gmail.com", "1234-5678"]
+    const textsFooter = ["Administracion y ventas", "arcan.ventas@gmail.com", "7709-1657"]
     const distanceBetweenTotal = 12
     const distanceBetweenTexts = 2
 
@@ -275,7 +308,7 @@ export class PdfController {
       const row = 3+(i*2)
       ws.cell(row,dateCol).string(moment(order?.finalDate).format("DD-MM-YYYY")).style(styles["cell"])
       ws.cell(row,motivoCol).string(`Pedido N° ${order?.orderNumber}`).style(styles["cell"])
-      ws.cell(row,amountCol).number(order?.articles?.reduce((acc,art) => acc+((art?.booked || 0) * (art?.price || 0)), 0)).style(styles["cell"])
+      ws.cell(row,amountCol).number(order?.articles?.reduce((acc,art) => acc+((art?.quantity || 0) * (art?.price || 0)), 0)).style(styles["cell"])
       ws.cell(row,totalCol).formula(`+${i ? xl.getExcelCellRef(row-1,totalCol) : "0"} + ${xl.getExcelCellRef(row,amountCol)}`).style(styles["cell"])
 
       const paymentRow = row+1

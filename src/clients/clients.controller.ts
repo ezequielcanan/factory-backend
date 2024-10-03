@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Post, Put } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post, Put, Query } from '@nestjs/common';
 import { ClientsService } from './clients.service';
 import { ConfigService } from '@nestjs/config';
 import { CreateClientDto } from './dto/create-client.dto';
@@ -15,8 +15,8 @@ export class ClientsController {
   }
 
   @Get()
-  async getClients() {
-    return this.clientsService.getClients()
+  async getClients(@Query("sort") sort: string, @Query("page") page: string) {
+    return this.clientsService.getClients(sort ? true : false, page)
   }
   
   @Get("/:id")

@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Post, Put, Query, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Post, Put, Query, UseGuards } from '@nestjs/common';
 import { ArticlesService } from './articles.service';
 import {ConfigService} from "@nestjs/config"
 import { CreateArticleDto } from './dto/create-article.dto';
@@ -27,8 +27,8 @@ export class ArticlesController {
   }
 
   @Get()
-  async getArticles() {
-    return this.articlesService.getArticles()
+  async getArticles(@Query("page") page: string, @Query("color") color: string, @Query("size") size: string, @Query("category") category: string, @Query("society") society: string, @Query("search") search: string) {
+    return this.articlesService.getArticles(page, color, size, category, society, search)
   }
 
   @Get("/:id")
@@ -39,6 +39,11 @@ export class ArticlesController {
   @Put("/:id")
   async updateArticle(@Param("id") id: string, @Body() article: CreateArticleDto) {
     return this.articlesService.updateArticle(id, article)
+  }
+
+  @Delete("/:id")
+  async deleteArticle(@Param("id") id: string) {
+    return this.articlesService.deleteArticle(id)
   }
 
   @Put("/stock/:id")

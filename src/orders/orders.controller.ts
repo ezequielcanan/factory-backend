@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Post, Put, Query } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Post, Put, Query } from '@nestjs/common';
 import { OrdersService } from './orders.service';
 import { ConfigService } from '@nestjs/config';
 import { ArticlesService } from 'src/articles/articles.service';
@@ -23,6 +23,11 @@ export class OrdersController {
   @Get("/:id")
   async getOrder(@Param("id") id: string) {
     return this.ordersService.getOrderAndCut(id)
+  }
+
+  @Get("/number/:number")
+  async getOrderByOrderNumber(@Param("number") number: string) {
+    return this.ordersService.getOrderAndCut(number, true)
   }
 
   @Post()
@@ -89,5 +94,36 @@ export class OrdersController {
   async changePaidAmount(@Param("id") id: string, @Query("paid") paid: string) {
     const order = await this.ordersService.updatePaidAmount(id, paid)
     return order
+  }
+
+
+  @Delete("/:id")
+  async deleteOrder(@Param("id") id: string) {
+    const result = await this.ordersService.deleteOrder(id);
+    return result
+  }
+
+  @Delete("/articles/:oid/:aid")
+  async deleteArticleFromOrder(@Param("oid") oid: string, @Param("aid") aid: string, @Query("custom") custom: string) {
+    const result = await this.ordersService.deleteArticle(oid, aid, custom ? true : false)
+    return result
+  }
+
+  @Post("/articles/:oid/:aid")
+  async addArticles(@Param("oid") oid: string, @Param("aid") aid: string, @Query("custom") custom: string) {
+    const result = await this.ordersService.addArticle(oid, aid, custom ? true : false)
+    return result
+  }
+
+  @Delete("/suborders/:oid/:sid")
+  async deleteSuborder(@Param("oid") oid: string, @Param("sid") sid: string) {
+    const result = await this.ordersService.deleteSuborder(oid, sid)
+    return result
+  }
+
+  @Post("/suborders/:oid/:number")
+  async addSuborder(@Param("oid") oid: string, @Param("number") number: string, @Query("cattown") cattown: string) {
+    const result = await this.ordersService.addSuborder(oid, number, cattown)
+    return result
   }
 }

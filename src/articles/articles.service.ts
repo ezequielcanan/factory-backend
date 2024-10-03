@@ -19,8 +19,19 @@ export class ArticlesService {
     return this.articleModel.create(article)
   }
 
-  async getArticles(): Promise<Article[] | any> {
-    const articles = await this.articleModel.find().lean().exec()
+  async getArticles(page: string, color: string, size: string, category: string, society: string, search: string): Promise<Article[] | any> {
+    const limit = 25
+    const skip = (Number(page) - 1) * limit
+
+    const findObj = {}
+    color && (findObj["color"] = color)
+    size && (findObj["size"] = size)
+    category && (findObj["category"] = category)
+    society && (findObj["society"] = society)
+    search && (findObj["description"] = { $regex: search, $options: 'i' })
+
+
+    const articles = await this.articleModel.find(findObj).sort({description: 1}).skip(skip).limit(limit).lean().exec()
     const newArticles = []
     await Promise.all(articles.map(async (article, i) => {
       const booked = await this.ordersService.getBookedQuantity(article?._id)
@@ -40,6 +51,10 @@ export class ArticlesService {
 
   async updateStock(stock: number, id: string | Types.ObjectId): Promise<Article | undefined> {
     return this.articleModel.findOneAndUpdate({_id: id}, {$set: {stock}}, {new: true})
+  }
+
+  async deleteArticle(id: string | Types.ObjectId): Promise<Article | undefined> {
+    return this.articleModel.findOneAndDelete({_id: id})
   }
 
   async getCustomArticle(id: string): Promise<Article> {

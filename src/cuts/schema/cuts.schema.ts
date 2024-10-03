@@ -16,6 +16,9 @@ export class Cut {
 
   @Prop({type: [ItemSchema]})
   items: Item[]
+
+  @Prop({type: [ItemSchema]})
+  manualItems: Item[]
 }
 
 export const CutsSchema = SchemaFactory.createForClass(Cut)

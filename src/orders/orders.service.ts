@@ -38,13 +38,21 @@ export class OrdersService {
   }
 
 
-  async getOrder(id: string): Promise<Order | undefined> {
-    return this.orderModel.findOne({ _id: id }).populate("client").populate("articles.article").populate("articles.customArticle")
+  async getOrder(id: string, number: boolean = false): Promise<Order | undefined> {
+    const findObj = {}
+
+    if (!number) {
+      findObj["_id"] = id
+    } else {
+      findObj["orderNumber"] = id
+    }
+
+    return this.orderModel.findOne(findObj).populate("client").populate("articles.article").populate("articles.customArticle")
   }
 
-  async getOrderAndCut(id: string): Promise<any> {
-    const order = await this.getOrder(id)
-    const cut = await this.cutsService.getCutFromOrder(id)
+  async getOrderAndCut(id: string, number: boolean = false): Promise<any> {
+    const order = await this.getOrder(id, number)
+    const cut = await this.cutsService.getCutFromOrder(!number ? id : order["_id"])
     return { order, cut }
   }
 
@@ -113,6 +121,11 @@ export class OrdersService {
 
   async createOrder(order: CreateOrderDto): Promise<Order | undefined> {
     let { client, articles, ...rest } = order
+
+    if (rest?.suborders?.length) {
+      rest.suborders = rest?.suborders?.map(s => new Types.ObjectId(s))
+    }
+
     const lastOrder = await this.getLastOrder()
     const newArticles = articles.map(a => {
       const returnItem = {
@@ -266,5 +279,34 @@ export class OrdersService {
 
   async updatePaidAmount(id: string, paid: string): Promise<Order | undefined> {
     return this.orderModel.findOneAndUpdate({_id: id}, {paid: Number(paid)}, {new: true})
+  }
+
+  async deleteOrder(id: string): Promise<any> {
+    const cut = await this.cutsService.deleteCutByOrder(id)
+    if (cut) await this.workshopOrdersModel.deleteOne({cut: cut["_id"]})
+    return this.orderModel.deleteOne({_id: new Types.ObjectId(id)})
+  }
+
+  async deleteArticle(oid: string, aid: string, custom: boolean): Promise<any> {
+    const findObj = {}
+    findObj[custom ? "customArticle" : "article"] = new Types.ObjectId(aid)
+    return this.orderModel.findOneAndUpdate({_id: new Types.ObjectId(oid)}, {$pull: {articles: findObj}}, {new: true})
+  }
+
+  async addArticle(oid: string, aid: string, custom: boolean): Promise<any> {
+    const findObj = {quantity: 0, booked: 0, common: true}
+    findObj[custom ? "customArticle" : "article"] = new Types.ObjectId(aid)
+    return this.orderModel.findOneAndUpdate({_id: new Types.ObjectId(oid)}, {$push: {articles: findObj}}, {new: true})
+  }
+
+  async deleteSuborder(oid: string, sid: string): Promise<any> {
+    return this.orderModel.findOneAndUpdate({_id: new Types.ObjectId(oid)}, {$pull: {suborders: new Types.ObjectId(sid)}}, {new: true})
+  }
+
+  async addSuborder(oid: string, number: string, cattown: string): Promise<any> {
+    const suborder = await this.getOrder(number, true)
+    if (oid != suborder["_id"] && (cattown ? suborder?.society == "Cattown" : true)) {
+      return this.orderModel.findOneAndUpdate({_id: new Types.ObjectId(oid)}, {$addToSet: {suborders: suborder["_id"]}}, {new: true})
+    }
   }
 }

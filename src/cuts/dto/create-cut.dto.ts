@@ -19,5 +19,11 @@ export class CreateCutDto {
   @IsArray()
   @ValidateNested({ each: true })
   @Type(() => ItemDto)
-  articles: ItemDto[];
+  articles: ItemDto[]
+
+  @IsOptional()
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => ItemDto)
+  manualItems: ItemDto[];
 }

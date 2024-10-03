@@ -39,6 +39,10 @@ export class CreateOrderDto {
   @IsString()
   client: string
 
+  @IsOptional()
+  @Type(() => Types.ObjectId)
+  suborders: Types.ObjectId[]
+
   @IsNotEmpty()
   @IsString()
   society: string;

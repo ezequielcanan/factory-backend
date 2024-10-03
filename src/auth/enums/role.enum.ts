@@ -5,5 +5,6 @@ export enum Role {
   Prices = "prices",
   Articles = "articles",
   Clients = "clients",
-  Workshops = "workshops"
+  Workshops = "workshops",
+  Cattown = "cattown",
 }

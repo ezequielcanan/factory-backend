@@ -26,6 +26,10 @@ export class CutsService {
     return this.cutsModel.create({ order: new Types.ObjectId(order), ...rest })
   }
 
+  async createManualCut(cut: CreateCutDto): Promise<Cut | undefined> {
+    return this.cutsModel.create(cut)
+  }
+
   async createCutFromOrder(order: any): Promise<Cut | undefined> {
     if (order?.articles?.some(a => a.hasToBeCut)) {
       const cut = {
@@ -217,5 +221,9 @@ export class CutsService {
     ]))[0]
 
     return await this.getCutWithPopulatedArticles(cut, !cut?.items?.length)
+  }
+
+  async deleteCutByOrder(id: string): Promise<Cut | undefined> {
+    return this.cutsModel.findOneAndDelete({order: new Types.ObjectId(id)})
   }
 }
