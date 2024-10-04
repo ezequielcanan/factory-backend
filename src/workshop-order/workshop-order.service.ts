@@ -36,22 +36,26 @@ export class WorkshopOrderService {
 
   async receiveWorkshopOrder(id: string): Promise<any> {
     const workshopOrder = await this.getWorkshopOrder(id)
-    const oldItems = workshopOrder?.cut["order"]?.articles?.map(art => {
-      if (art?.customArticle) {
-        return {booked: art.booked, quantity: art.quantity, common: art.common, hasToBeCut: art.hasToBeCut, customArticle: art?.customArticle?._id}
-      } else {
-        return {booked: art.booked, quantity: art.quantity, common: art.common, hasToBeCut: art.hasToBeCut, article: art?.article?._id}
-      }
-    })
 
-    await this.cutsServices.insertItems(workshopOrder?.cut?._id, oldItems)
+    if (workshopOrder?.cut["order"]) {
+      const oldItems = workshopOrder?.cut["order"]?.articles?.map(art => {
+        if (art?.customArticle) {
+          return {booked: art.booked, quantity: art.quantity, common: art.common, hasToBeCut: art.hasToBeCut, customArticle: art?.customArticle?._id}
+        } else {
+          return {booked: art.booked, quantity: art.quantity, common: art.common, hasToBeCut: art.hasToBeCut, article: art?.article?._id}
+        }
+      }) 
+      await this.cutsServices.insertItems(workshopOrder?.cut?._id, oldItems)
+    }
 
-    await Promise.all(workshopOrder?.cut["order"]?.articles?.map(async a => {
-      if (a.hasToBeCut && (a.quantity > a.booked)) {
+    await Promise.all((workshopOrder?.cut["order"]?.articles || workshopOrder?.cut["manualItems"])?.map(async a => {
+      if (workshopOrder?.cut["order"] && a.hasToBeCut && (a.quantity > a.booked)) {
         this.ordersService.updateArticleBooked(workshopOrder?.cut["order"]?._id, a[a.common ? "article" : "customArticle"]?._id, (a.booked || 0) + (a.quantity - (a.booked || 0)), a.common ? "" : "true")
         if (a.common) {
           this.articlesService.updateStock(a?.article?.stock + (a.quantity - a.booked), a?.article?._id)
         }
+      } else {
+        this.articlesService.updateStock(a?.article?.stock + a.quantity, a?.article?._id)
       }
     }))
     

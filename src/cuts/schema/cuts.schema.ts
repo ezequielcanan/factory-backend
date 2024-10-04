@@ -27,6 +27,7 @@ CutsSchema.pre("findOne", function (next) {
   this.populate('order')
   this.populate('items.article')
   this.populate('items.customArticle')
+  this.populate('manualItems.article')
   next()
 })
 
@@ -34,6 +35,7 @@ CutsSchema.pre("find", function (next) {
   this.populate('order')
   this.populate('items.article')
   this.populate('items.customArticle')
+  this.populate('manualItems.article')
   next()
 })
 

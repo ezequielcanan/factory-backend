@@ -27,6 +27,7 @@ export class CutsService {
   }
 
   async createManualCut(cut: CreateCutDto): Promise<Cut | undefined> {
+    cut.manualItems = cut?.manualItems?.map(i => {return {...i, article: new Types.ObjectId(i?.article)}})
     return this.cutsModel.create(cut)
   }
 
@@ -50,10 +51,13 @@ export class CutsService {
   } 
 
   async getCutWithPopulatedArticles(cut, inOrder = true): Promise<any> {
-    let articles = (inOrder ? cut?.order?.articles : cut?.items)
+    let articles = cut?.order?.articles || (cut?.items?.length && cut.items) || cut?.manualItems
+
     if (articles) {
       const populatedArticles = await Promise.all(articles?.map(async article => {
         const returnObj = { ...article }
+        if (cut?.manualItems?.length) {
+        }
         const commonArticle = await this.articlesModel.findOne({ _id: article?.article })
         const customArticle = await this.customArticlesModel.findOne({ _id: article?.customArticle })
 
@@ -67,8 +71,7 @@ export class CutsService {
 
         return returnObj
       }))
-
-      if (inOrder) {cut.order.articles = populatedArticles} else {cut.items = populatedArticles}
+      if (cut?.order?.articles) {cut.order.articles = populatedArticles} else if (cut?.items?.length) {cut.items = populatedArticles} else {cut.manualItems = populatedArticles}
     }
 
     return cut
@@ -91,7 +94,10 @@ export class CutsService {
         }
       },
       {
-        $unwind: '$orderDetails'
+        $unwind: {
+          path: '$orderDetails',
+          preserveNullAndEmptyArrays: true
+        }
       },
       {
         $lookup: {
@@ -119,7 +125,10 @@ export class CutsService {
       },
       {
         $match: {
-          'filteredArticles.0': { $exists: true }
+          $or: [
+            { 'filteredArticles.0': { $exists: true } },
+            { orderDetails: null }
+          ]
         }
       },
       {
@@ -153,20 +162,23 @@ export class CutsService {
 
     const finalCuts = await this.getCutsWithPopulatedArticles(cutsWithArticlesToCut)
 
+
     return finalCuts.filter(c => !c?.workshopOrder)
   }
 
   async getFinishedCuts(): Promise<Cut[] | undefined> {
     const cuts = await this.cutsModel.find()
+    const finalCuts = []
     const workshopOrders = await this.workshopOrderModel.find()
     workshopOrders.forEach(w => {
       const cutIndex = cuts.findIndex(c => String(c?._id) == String(w?.cut?._id))
-      if (cutIndex == -1) {
-        cuts.splice(cutIndex, 1)
+      
+      if (cutIndex != -1) {
+        finalCuts.push(cuts[cutIndex])
       }
     })
     
-    return await this.getCutsWithPopulatedArticles(cuts, false)
+    return await this.getCutsWithPopulatedArticles(finalCuts, false)
   }
 
   async getCut(id: string): Promise<Cut | undefined> {
@@ -193,7 +205,10 @@ export class CutsService {
         }
       },
       {
-        $unwind: '$order'
+        $unwind: {
+          path: '$order',
+          preserveNullAndEmptyArrays: true
+        }
       },
       {
         $addFields: {
