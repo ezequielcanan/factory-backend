@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Client, ClientDocument } from './schema/clients.schema';
-import { Model } from 'mongoose';
+import { Model, Types } from 'mongoose';
 import { CreateClientDto } from './dto/create-client.dto';
 import { Order, OrderDocument } from 'src/orders/schemas/orders.schema';
 
@@ -28,13 +28,6 @@ export class ClientsService {
         { $sort: { name: 1 } },
         { $replaceRoot: { newRoot: "$original" } }
       ])
-    } else {
-      const clients = await this.clientModel.find()
-      const clientsWithBalance = []
-      await Promise.all(clients.map(async client => {
-        const orders = await this.orderModel.find({client: client?._id})
-        
-      }))
     }
   }
 
@@ -44,5 +37,9 @@ export class ClientsService {
 
   async updateClient(id: string, client: CreateClientDto): Promise<Client | undefined> {
     return this.clientModel.findOneAndUpdate({ _id: id }, { $set: client }, { new: true })
+  }
+
+  async getOrdersByClient(cid: string): Promise<any> {
+    return this.orderModel.find({client: new Types.ObjectId(cid), finished: true})
   }
 }

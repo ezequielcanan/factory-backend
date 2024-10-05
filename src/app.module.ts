@@ -15,6 +15,7 @@ import { join } from 'path';
 import { WorkshopsModule } from './workshops/workshops.module';
 import { WorkshopOrderModule } from './workshop-order/workshop-order.module';
 import { PdfModule } from './pdf/pdf.module';
+import { PaymentsModule } from './payments/payments.module';
 
 @Module({
   imports: [
@@ -40,7 +41,8 @@ import { PdfModule } from './pdf/pdf.module';
     UploadfilesModule,
     WorkshopsModule,
     WorkshopOrderModule,
-    PdfModule
+    PdfModule,
+    PaymentsModule
   ],
   controllers: [AppController],
   providers: [AppService],
