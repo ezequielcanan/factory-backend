@@ -44,6 +44,12 @@ export class OrdersController {
     return {booked: bookedQuantity, stock: article?.stock}
   }
 
+  @Put("/mode/:id")
+  async changeMode(@Param("id") id: string) {
+    const result = await this.ordersService.changeMode(id);
+    return result
+  }
+
   @Put("/articles/:id")
   async setToCutCommonArticles(@Param("id") id: string) {
     const result = await this.ordersService.setToCutCommonArticles(id);

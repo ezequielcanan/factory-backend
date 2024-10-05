@@ -309,4 +309,9 @@ export class OrdersService {
       return this.orderModel.findOneAndUpdate({_id: new Types.ObjectId(oid)}, {$addToSet: {suborders: suborder["_id"]}}, {new: true})
     }
   }
+
+  async changeMode(id: string): Promise<Order | undefined> {
+    const order = await this.orderModel.findOne({_id: new Types.ObjectId(id)})
+    return this.orderModel.findOneAndUpdate({_id: new Types.ObjectId(id)}, {$set: {mode: !order?.mode}}, {new: true})
+  }
 }

@@ -27,8 +27,9 @@ export class PaymentsService {
     const orders = await this.clientsService.getOrdersByClient(cid)
 
     const ordersTotal = orders.reduce((acc, order) => {
+      const multiply = (order?.mode ? 1.21 : 1)
       return acc + (order?.articles?.reduce((artAcc, article) => {
-        return artAcc + ((article?.price || 0) * article?.quantity)
+        return artAcc + (((article?.price || 0) * article?.quantity) * multiply)
       }, 0))
     }, 0)
 
@@ -59,7 +60,7 @@ export class PaymentsService {
       clients[i]["balance"] = result["balance"]
     }))
 
-    return clients
+    return clients.sort((a,b) => b["balance"] - a["balance"])
   }
 
   async getClientResume(cid: string): Promise<any> {

@@ -6,6 +6,7 @@ import * as xl from 'excel4node'
 import * as PDFDocument from 'pdfkit';
 import * as moment from 'moment'
 import 'moment/locale/es'
+import { PaymentsService } from 'src/payments/payments.service';
 
 const fontHeadStyle = {
   font: {
@@ -108,16 +109,17 @@ const assetsPath = "./src/assets"
 export class PdfController {
   constructor(
     private readonly clientsService: ClientsService,
-    private readonly ordersService: OrdersService
-  ) {}
+    private readonly ordersService: OrdersService,
+    private readonly paymentsService: PaymentsService
+  ) { }
 
   @Get('/1/:oid')
   async generateWhitePdf(@Param("oid") oid: string, @Res() res: Response) {
-    
+
     // ENCABEZADO -------------------------------------------------------
 
     const order = await this.ordersService.getOrder(oid)
-    const doc = new PDFDocument({size: "A4"});
+    const doc = new PDFDocument({ size: "A4" });
 
     res.setHeader('Content-Type', 'application/pdf');
     res.setHeader('Content-Disposition', `attachment; filename=Presupuesto N°${order?.orderNumber}.pdf`);
@@ -146,11 +148,11 @@ export class PdfController {
 
   @Get('/2/:oid')
   async generatePdf(@Param("oid") oid: string, @Res() res: Response) {
-    
+
     // ENCABEZADO -------------------------------------------------------
 
     const order = await this.ordersService.getOrder(oid)
-    const doc = new PDFDocument({size: "A4"});
+    const doc = new PDFDocument({ size: "A4" });
 
     res.setHeader('Content-Type', 'application/pdf');
     res.setHeader('Content-Disposition', `attachment; filename=Presupuesto N°${order?.orderNumber}.pdf`);
@@ -168,71 +170,71 @@ export class PdfController {
     })
 
     const items = [
-      {header: "Cliente", value: order?.client["name"]},
-      {header: "Domicilio", value: order?.client["address"]},
-      {header: "Presupuesto", value: "N° " + order?.orderNumber},
+      { header: "Cliente", value: order?.client["name"] },
+      { header: "Domicilio", value: order?.client["address"] },
+      { header: "Presupuesto", value: "N° " + order?.orderNumber },
     ]
 
     const itemsInitialXPercentage = 40
     const paddingItems = 3
-    items.forEach((item,i) => {
-      doc.fill(mainColor).font(`${assetsPath}/fonts/Montserrat-SemiBold.ttf`).fontSize(12).text(item.header, percentageOfPageX(itemsInitialXPercentage+(!i ? paddingItems : 20 * i)), percentageOfPageY(5), {width: percentageOfPageX(20 - paddingItems * 2), ellipsis: false})
-      doc.fill("#000000").font(`${assetsPath}/fonts/Montserrat-SemiBold.ttf`).fontSize(10).text(item.value, percentageOfPageX(itemsInitialXPercentage+(!i ? paddingItems : 20 * i)), percentageOfPageY(7.5), {width: percentageOfPageX(20 - paddingItems * 2), ellipsis: true})
+    items.forEach((item, i) => {
+      doc.fill(mainColor).font(`${assetsPath}/fonts/Montserrat-SemiBold.ttf`).fontSize(12).text(item.header, percentageOfPageX(itemsInitialXPercentage + (!i ? paddingItems : 20 * i)), percentageOfPageY(5), { width: percentageOfPageX(20 - paddingItems * 2), ellipsis: false })
+      doc.fill("#000000").font(`${assetsPath}/fonts/Montserrat-SemiBold.ttf`).fontSize(10).text(item.value, percentageOfPageX(itemsInitialXPercentage + (!i ? paddingItems : 20 * i)), percentageOfPageY(7.5), { width: percentageOfPageX(20 - paddingItems * 2), ellipsis: true })
     })
 
 
     // TABLA DE ARTICULOS ----------------------------------------------
-    
+
     const firstYTable = 20
     const firstXTable = 5
     const yTable = percentageOfPageY(firstYTable)
     const xTable = percentageOfPageX(firstXTable)
 
-    doc.save().moveTo(xTable, yTable).lineTo(percentageOfPageX(100-firstXTable), yTable).lineTo(percentageOfPageX(100-firstXTable), yTable + percentageOfPageY(5)).lineTo(xTable, yTable + percentageOfPageY(5)).fill(order?.society == "Arcan" ? '#22255c' : "#42062b")
-    
+    doc.save().moveTo(xTable, yTable).lineTo(percentageOfPageX(100 - firstXTable), yTable).lineTo(percentageOfPageX(100 - firstXTable), yTable + percentageOfPageY(5)).lineTo(xTable, yTable + percentageOfPageY(5)).fill(order?.society == "Arcan" ? '#22255c' : "#42062b")
+
     const headers = ["Cantidad", "Producto", "Detalle", "Unitario", "Total"]
 
     headers.forEach((header, i) => {
-      doc.fill("#FFFFFF").font(`${assetsPath}/fonts/Montserrat-Bold.ttf`).fontSize(12).text(header, percentageOfPageX(firstXTable+(!i ? 3 : 18 * i)), yTable + percentageOfPageY(1.5))
+      doc.fill("#FFFFFF").font(`${assetsPath}/fonts/Montserrat-Bold.ttf`).fontSize(12).text(header, percentageOfPageX(firstXTable + (!i ? 3 : 18 * i)), yTable + percentageOfPageY(1.5))
     })
 
     const padding = 3
     let finalY = yTable + percentageOfPageY(5)
     order?.articles?.forEach((article, i) => {
-      const yRow = percentageOfPageY(firstYTable+(!i ? 5 : 5 + 7 * i))
+      const yRow = percentageOfPageY(firstYTable + (!i ? 5 : 5 + 7 * i))
 
-      doc.save().moveTo(xTable, yRow).lineTo(percentageOfPageX(100-firstXTable), yRow).lineTo(percentageOfPageX(100-firstXTable), percentageOfPageY(firstYTable+(!i ? 5 : 5 + 7 * i)+7)).lineTo(xTable, percentageOfPageY(firstYTable+(!i ? 5 : 5 + 7 * i)+7)).fill(i % 2 ? "#CCCCCC" : "#EEEEEE")
-      
+      doc.save().moveTo(xTable, yRow).lineTo(percentageOfPageX(100 - firstXTable), yRow).lineTo(percentageOfPageX(100 - firstXTable), percentageOfPageY(firstYTable + (!i ? 5 : 5 + 7 * i) + 7)).lineTo(xTable, percentageOfPageY(firstYTable + (!i ? 5 : 5 + 7 * i) + 7)).fill(i % 2 ? "#CCCCCC" : "#EEEEEE")
+
       const texts = [
-        {value: article?.quantity},
-        {notText: true, value: `./uploads/articles/${article?.customArticle ? "custom/" : ""}${article?.article?._id || article?.customArticle?._id}/thumbnail.png`},
-        {value: article?.article ? article?.article["description"] : article?.customArticle["detail"]},
-        {value: article?.price || 0},
-        {value: (article?.price || 0) * (article?.quantity || 0)}
+        { value: article?.quantity },
+        { notText: true, value: `./uploads/articles/${article?.customArticle ? "custom/" : ""}${article?.article?._id || article?.customArticle?._id}/thumbnail.png` },
+        { value: article?.article ? article?.article["description"] : article?.customArticle["detail"] },
+        { value: article?.price || 0 },
+        { value: (article?.price || 0) * (article?.quantity || 0) }
       ]
 
       texts.forEach((text, iText) => {
         if (text?.notText) {
-          doc.image(text?.value, percentageOfPageX(firstXTable+(!iText ? 3 : 18 * iText)), yRow + percentageOfPageY(0.25), {
+          doc.image(text?.value, percentageOfPageX(firstXTable + (!iText ? 3 : 18 * iText)), yRow + percentageOfPageY(0.25), {
             fit: [percentageOfPageX(12), percentageOfPageY(6.5)],
             align: 'center',
             valign: 'center'
           });
         } else {
-          doc.fill("#000000").font(`${assetsPath}/fonts/Montserrat-SemiBold.ttf`).fontSize(10).text(text?.value, percentageOfPageX(firstXTable+(!iText ? 3 : 18 * iText)), yRow + percentageOfPageY(padding))
+          doc.fill("#000000").font(`${assetsPath}/fonts/Montserrat-SemiBold.ttf`).fontSize(10).text(text?.value, percentageOfPageX(firstXTable + (!iText ? 3 : 18 * iText)), yRow + percentageOfPageY(padding))
         }
       })
-      finalY = percentageOfPageY(firstYTable+(!i ? 5 : 5 + 7 * i)+7)
+      finalY = percentageOfPageY(firstYTable + (!i ? 5 : 5 + 7 * i) + 7)
     })
 
-    const totalString = `Total: $${order?.articles?.reduce((acc,art) => acc+((art?.price || 0) * (art?.quantity || 0)),0)}`
+    const totalString = `Total: $${order?.articles?.reduce((acc, art) => acc + ((art?.price || 0) * (art?.quantity || 0)), 0)}`
 
     const textWidth = doc.fill("#000000").font(`${assetsPath}/fonts/Montserrat-ExtraBold.ttf`).fontSize(18).widthOfString(totalString);
 
     const xStartPosition = percentageOfPageX(95) - textWidth;
 
     doc.text(totalString, xStartPosition, finalY + percentageOfPageY(3), { width: 0, ellipsis: false })
-    
+
     // PIE ------------------------------------------------------------
 
     const pageWidth = doc.page.width
@@ -240,11 +242,11 @@ export class PdfController {
     const distanceBetweenTotal = 12
     const distanceBetweenTexts = 2
 
-    textsFooter.forEach((text,i) => {
+    textsFooter.forEach((text, i) => {
       const textWidth = doc.font(`${assetsPath}/fonts/Montserrat-${!i ? "SemiBold" : "Regular"}.ttf`).fontSize(14).widthOfString(text)
       const textXPosition = (pageWidth - textWidth) / 2
-  
-      doc.text(text, textXPosition,finalY + percentageOfPageY(distanceBetweenTotal + distanceBetweenTexts * i))
+
+      doc.text(text, textXPosition, finalY + percentageOfPageY(distanceBetweenTotal + distanceBetweenTexts * i))
     })
 
     doc.font(`${assetsPath}/fonts/Montserrat-Regular.ttf`).fontSize(8).text("Documento no válido como factura", percentageOfPageX(5), percentageOfPageY(88.5))
@@ -256,8 +258,9 @@ export class PdfController {
 
   @Get('/cc/:cid')
   async generateClientExcel(@Param("cid") cid: string, @Res() res: Response) {
-    const orders = await this.ordersService.getOrdersByClient(cid)
+    const orders = (await this.ordersService.getOrdersByClient(cid)).filter(o => o.finished)
     const client = await this.clientsService.getClient(cid)
+    const payments = await this.paymentsService.getPaymentsByClient(cid)
 
     const wb = new xl.Workbook()
     const ws = wb.addWorksheet("CUENTA CORRIENTE", {
@@ -266,7 +269,7 @@ export class PdfController {
         'defaultRowHeight': 30,
       }
     })
-    
+
     const styles = {
       sectionHead: wb.createStyle({
         ...fontHeadStyle,
@@ -302,20 +305,30 @@ export class PdfController {
     ws.cell(2, amountCol).string(`MONTO`).style(styles["importantCell"])
     ws.cell(2, totalCol).string(`TOTAL`).style(styles["importantCell"])
 
-    console.log(orders)
-    orders.forEach((order, i) => {
-      console.log(order?.finalDate)
-      const row = 3+(i*2)
-      ws.cell(row,dateCol).string(moment(order?.finalDate).format("DD-MM-YYYY")).style(styles["cell"])
-      ws.cell(row,motivoCol).string(`Pedido N° ${order?.orderNumber}`).style(styles["cell"])
-      ws.cell(row,amountCol).number(order?.articles?.reduce((acc,art) => acc+((art?.quantity || 0) * (art?.price || 0)), 0)).style(styles["cell"])
-      ws.cell(row,totalCol).formula(`+${i ? xl.getExcelCellRef(row-1,totalCol) : "0"} + ${xl.getExcelCellRef(row,amountCol)}`).style(styles["cell"])
+    let items = []
 
-      const paymentRow = row+1
-      ws.cell(paymentRow,dateCol).string(moment(order?.finalDate).format("DD-MM-YYYY")).style(styles["cell"])
-      ws.cell(paymentRow,motivoCol).string(`Pago pedido N° ${order?.orderNumber}`).style(styles["cell"])
-      ws.cell(paymentRow,amountCol).number(order?.paid || 0).style(styles["cell"])
-      ws.cell(paymentRow,totalCol).formula(`+${xl.getExcelCellRef(paymentRow-1,totalCol)} - ${xl.getExcelCellRef(paymentRow,amountCol)}`).style(styles["cell"])
+    orders.forEach((order, i) => {
+      console.log(order.finalDate)
+      items.push({ date: moment(order?.finalDate, "DD-MM-YYYY"), text: `Pedido N° ${order?.orderNumber}`, amount: order?.articles?.reduce((acc, art) => acc + ((art?.quantity || 0) * (art?.price || 0) * (order?.mode ? 1.21 : 1)), 0) })
+    })
+
+    payments.forEach((payment) => {
+      console.log(payment.date)
+      items.push({
+        date: moment(payment?.date),
+        text: "Pago",
+        amount: payment?.amount
+      })
+    })
+
+    items = items.sort((a, b) => a?.date - b?.date)
+
+    items.forEach((item, i) => {
+      const row = 3+i
+      ws.cell(row,dateCol).string(moment.utc(item?.date).format("DD-MM-YYYY")).style(styles["cell"])
+      ws.cell(row,motivoCol).string(item?.text).style(styles["cell"])
+      ws.cell(row,amountCol).number(item?.amount).style(styles["cell"])
+      ws.cell(row,totalCol).formula(`+${i ? xl.getExcelCellRef(row-1,totalCol) : "0"} + ${xl.getExcelCellRef(row,amountCol)}`).style(styles["cell"])
     })
 
     wb.write(`Cuenta corriente ${client?.name || ""}.xlsx`, res)
