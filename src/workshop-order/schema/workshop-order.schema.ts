@@ -19,6 +19,12 @@ export class WorkshopOrder {
 
   @Prop()
   deliveryDate: Date
+
+  @Prop()
+  description: string
+
+  @Prop()
+  detail: string
 }
 
 export const WorkshopOrderSchema = SchemaFactory.createForClass(WorkshopOrder)

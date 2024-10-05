@@ -294,7 +294,7 @@ export class OrdersService {
   }
 
   async addArticle(oid: string, aid: string, custom: boolean): Promise<any> {
-    const findObj = {quantity: 0, booked: 0, common: true}
+    const findObj = {quantity: 0, booked: 0, common: custom ? false : true}
     findObj[custom ? "customArticle" : "article"] = new Types.ObjectId(aid)
     return this.orderModel.findOneAndUpdate({_id: new Types.ObjectId(oid)}, {$push: {articles: findObj}}, {new: true})
   }

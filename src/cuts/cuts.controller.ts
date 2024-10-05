@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Post } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post, Put, Query } from '@nestjs/common';
 import { CutsService } from './cuts.service';
 import { CreateCutDto } from './dto/create-cut.dto';
 
@@ -28,4 +28,8 @@ export class CutsController {
     return this.cutsService.createManualCut(cut)
   }
 
+  @Put("/:id")
+  async updateCut(@Param("id") id: string, @Query("property") property: string, @Query("value") value: string) {
+    return this.cutsService.updateCut(id, property, value)
+  }
 }

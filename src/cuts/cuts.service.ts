@@ -241,4 +241,10 @@ export class CutsService {
   async deleteCutByOrder(id: string): Promise<Cut | undefined> {
     return this.cutsModel.findOneAndDelete({order: new Types.ObjectId(id)})
   }
+
+  async updateCut(id: string, property: string, value: string): Promise<Cut | undefined> {
+    const updateObj = {}
+    updateObj[property] = value
+    return this.cutsModel.findOneAndUpdate({_id: new Types.ObjectId(id)}, {$set: updateObj}, {new: true})
+  }
 }

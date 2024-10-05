@@ -313,11 +313,11 @@ export class PdfController {
     })
 
     payments.forEach((payment) => {
-      console.log(payment.date)
       items.push({
         date: moment(payment?.date),
         text: "Pago",
-        amount: payment?.amount
+        amount: payment?.amount,
+        payment: true
       })
     })
 
@@ -327,7 +327,7 @@ export class PdfController {
       const row = 3+i
       ws.cell(row,dateCol).string(moment.utc(item?.date).format("DD-MM-YYYY")).style(styles["cell"])
       ws.cell(row,motivoCol).string(item?.text).style(styles["cell"])
-      ws.cell(row,amountCol).number(item?.amount).style(styles["cell"])
+      ws.cell(row,amountCol).number(item?.payment ? -item?.amount : item?.amount).style(styles["cell"])
       ws.cell(row,totalCol).formula(`+${i ? xl.getExcelCellRef(row-1,totalCol) : "0"} + ${xl.getExcelCellRef(row,amountCol)}`).style(styles["cell"])
     })
 

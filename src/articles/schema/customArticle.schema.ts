@@ -5,6 +5,18 @@ import { HydratedDocument } from "mongoose";
 export class CustomArticle {
   @Prop()
   detail: string
+
+  @Prop()
+  details: string
+  
+  @Prop()
+  size: string
+  
+  @Prop()
+  ubicacion: string
+  
+  @Prop()
+  bordado: string
 }
 
 export const CustomArticleSchema = SchemaFactory.createForClass(CustomArticle)
