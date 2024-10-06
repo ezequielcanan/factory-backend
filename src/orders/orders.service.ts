@@ -314,4 +314,10 @@ export class OrdersService {
     const order = await this.orderModel.findOne({_id: new Types.ObjectId(id)})
     return this.orderModel.findOneAndUpdate({_id: new Types.ObjectId(id)}, {$set: {mode: !order?.mode}}, {new: true})
   }
+
+  async updateOrder(id: string, property: string, value: string): Promise<Order | undefined> {
+    const updateObj = {}
+    updateObj[property] = (value == "true" || value == "false" ) ? Boolean(value) : value
+    return this.orderModel.findOneAndUpdate({_id: new Types.ObjectId(id)}, {$set: updateObj}, {new: true})
+  }
 }

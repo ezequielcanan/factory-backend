@@ -13,7 +13,7 @@ export class PaymentsService {
   ) { }
 
   async getPaymentsByClient(cid: string): Promise<Payment[] | undefined> {
-    return this.paymentModel.find({ client: new Types.ObjectId(cid) })
+    return this.paymentModel.find({ client: new Types.ObjectId(cid) }).sort({date: -1})
   }
 
   async getTotalPaymentsByClient(cid: string): Promise<any> {

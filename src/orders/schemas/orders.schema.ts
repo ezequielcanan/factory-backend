@@ -27,6 +27,9 @@ export class Order {
   finished: boolean
 
   @Prop()
+  inPricing: boolean
+
+  @Prop()
   extraInfo: string
 
   @Prop()

@@ -148,62 +148,64 @@ export class PdfController {
 
   @Get('/2/:oid')
   async generatePdf(@Param("oid") oid: string, @Res() res: Response) {
-
-    // ENCABEZADO -------------------------------------------------------
-
-    const order = await this.ordersService.getOrder(oid)
-    const doc = new PDFDocument({ size: "A4" });
+    const order = await this.ordersService.getOrder(oid);
+    const doc = new PDFDocument({ size: "A4", margin: 50 });
 
     res.setHeader('Content-Type', 'application/pdf');
     res.setHeader('Content-Disposition', `attachment; filename=Presupuesto N°${order?.orderNumber}.pdf`);
 
-    const mainColor = order?.society == "Arcan" ? "#5357a1" : "#6b204e"
-
+    const mainColor = order?.society == "Arcan" ? "#5357a1" : "#6b204e";
     doc.pipe(res);
 
-    doc.save().moveTo(0, 0).lineTo(0, percentageOfPageY(60)).lineTo(percentageOfPageX(40), 0).fill(mainColor)
-
-    doc.image(`${assetsPath}/${order?.society?.toLowerCase()}.png`, 20, 0, {
-      fit: [150, 150],
-      align: 'center',
-      valign: 'center'
-    })
+    // ENCABEZADO
+    doc.save().moveTo(0, 0).lineTo(0, percentageOfPageY(60)).lineTo(percentageOfPageX(40), 0).fill(mainColor);
+    doc.image(`${assetsPath}/${order?.society?.toLowerCase()}.png`, 20, 0, { fit: [150, 150], align: 'center', valign: 'center' });
 
     const items = [
       { header: "Cliente", value: order?.client["name"] },
       { header: "Domicilio", value: order?.client["address"] },
       { header: "Presupuesto", value: "N° " + order?.orderNumber },
-    ]
+    ];
 
-    const itemsInitialXPercentage = 40
-    const paddingItems = 3
+    const itemsInitialXPercentage = 40;
+    const paddingItems = 3;
     items.forEach((item, i) => {
-      doc.fill(mainColor).font(`${assetsPath}/fonts/Montserrat-SemiBold.ttf`).fontSize(12).text(item.header, percentageOfPageX(itemsInitialXPercentage + (!i ? paddingItems : 20 * i)), percentageOfPageY(5), { width: percentageOfPageX(20 - paddingItems * 2), ellipsis: false })
-      doc.fill("#000000").font(`${assetsPath}/fonts/Montserrat-SemiBold.ttf`).fontSize(10).text(item.value, percentageOfPageX(itemsInitialXPercentage + (!i ? paddingItems : 20 * i)), percentageOfPageY(7.5), { width: percentageOfPageX(20 - paddingItems * 2), ellipsis: true })
-    })
+      doc.fill(mainColor).font(`${assetsPath}/fonts/Montserrat-SemiBold.ttf`).fontSize(12).text(item.header, percentageOfPageX(itemsInitialXPercentage + (!i ? paddingItems : 20 * i)), percentageOfPageY(5), { width: percentageOfPageX(20 - paddingItems * 2), ellipsis: false });
+      doc.fill("#000000").font(`${assetsPath}/fonts/Montserrat-SemiBold.ttf`).fontSize(10).text(item.value, percentageOfPageX(itemsInitialXPercentage + (!i ? paddingItems : 20 * i)), percentageOfPageY(7.5), { width: percentageOfPageX(20 - paddingItems * 2), ellipsis: true });
+    });
 
+    // TABLA DE ARTICULOS
+    const firstYTable = 20;
+    const firstXTable = 5;
+    const yTable = percentageOfPageY(firstYTable);
+    const xTable = percentageOfPageX(firstXTable);
 
-    // TABLA DE ARTICULOS ----------------------------------------------
+    // Dibujamos los headers solo una vez
+    doc.save().moveTo(xTable, yTable).lineTo(percentageOfPageX(100 - firstXTable), yTable).lineTo(percentageOfPageX(100 - firstXTable), yTable + percentageOfPageY(5)).lineTo(xTable, yTable + percentageOfPageY(5)).fill(order?.society == "Arcan" ? '#22255c' : "#42062b");
 
-    const firstYTable = 20
-    const firstXTable = 5
-    const yTable = percentageOfPageY(firstYTable)
-    const xTable = percentageOfPageX(firstXTable)
-
-    doc.save().moveTo(xTable, yTable).lineTo(percentageOfPageX(100 - firstXTable), yTable).lineTo(percentageOfPageX(100 - firstXTable), yTable + percentageOfPageY(5)).lineTo(xTable, yTable + percentageOfPageY(5)).fill(order?.society == "Arcan" ? '#22255c' : "#42062b")
-
-    const headers = ["Cantidad", "Producto", "Detalle", "Unitario", "Total"]
-
+    const headers = ["Cantidad", "Producto", "Detalle", "Unitario", "Total"];
     headers.forEach((header, i) => {
-      doc.fill("#FFFFFF").font(`${assetsPath}/fonts/Montserrat-Bold.ttf`).fontSize(12).text(header, percentageOfPageX(firstXTable + (!i ? 3 : 18 * i)), yTable + percentageOfPageY(1.5))
-    })
+      doc.fill("#FFFFFF").font(`${assetsPath}/fonts/Montserrat-Bold.ttf`).fontSize(12).text(header, percentageOfPageX(firstXTable + (!i ? 3 : 18 * i)), yTable + percentageOfPageY(1.5));
+    });
 
-    const padding = 3
-    let finalY = yTable + percentageOfPageY(5)
+    let finalY = yTable + percentageOfPageY(5);
+    const padding = 3;
+
+    // Verifica si hay espacio suficiente para una nueva fila
+    const checkAndAddPage = () => {
+      if (finalY + percentageOfPageY(7) > doc.page.height - 150) { // Dejamos más margen para el pie de página
+        doc.addPage();
+        finalY = percentageOfPageY(5);
+      }
+    };
+
+    // Generar las filas de los artículos
     order?.articles?.forEach((article, i) => {
-      const yRow = percentageOfPageY(firstYTable + (!i ? 5 : 5 + 7 * i))
+      checkAndAddPage(); // Verifica si necesita una nueva página antes de cada fila
 
-      doc.save().moveTo(xTable, yRow).lineTo(percentageOfPageX(100 - firstXTable), yRow).lineTo(percentageOfPageX(100 - firstXTable), percentageOfPageY(firstYTable + (!i ? 5 : 5 + 7 * i) + 7)).lineTo(xTable, percentageOfPageY(firstYTable + (!i ? 5 : 5 + 7 * i) + 7)).fill(i % 2 ? "#CCCCCC" : "#EEEEEE")
+      const yRow = finalY;
+
+      doc.save().moveTo(xTable, yRow).lineTo(percentageOfPageX(100 - firstXTable), yRow).lineTo(percentageOfPageX(100 - firstXTable), yRow + percentageOfPageY(7)).lineTo(xTable, yRow + percentageOfPageY(7)).fill(i % 2 ? "#CCCCCC" : "#EEEEEE");
 
       const texts = [
         { value: article?.quantity },
@@ -211,48 +213,51 @@ export class PdfController {
         { value: article?.article ? article?.article["description"] : article?.customArticle["detail"] },
         { value: article?.price || 0 },
         { value: (article?.price || 0) * (article?.quantity || 0) }
-      ]
+      ];
 
       texts.forEach((text, iText) => {
         if (text?.notText) {
-          doc.image(text?.value, percentageOfPageX(firstXTable + (!iText ? 3 : 18 * iText)), yRow + percentageOfPageY(0.25), {
-            fit: [percentageOfPageX(12), percentageOfPageY(6.5)],
-            align: 'center',
-            valign: 'center'
-          });
+          doc.image(text?.value, percentageOfPageX(firstXTable + (!iText ? 3 : 18 * iText)), yRow + percentageOfPageY(0.25), { fit: [percentageOfPageX(12), percentageOfPageY(6.5)], align: 'center', valign: 'center' });
         } else {
-          doc.fill("#000000").font(`${assetsPath}/fonts/Montserrat-SemiBold.ttf`).fontSize(10).text(text?.value, percentageOfPageX(firstXTable + (!iText ? 3 : 18 * iText)), yRow + percentageOfPageY(padding))
+          doc.fill("#000000").font(`${assetsPath}/fonts/Montserrat-SemiBold.ttf`).fontSize(10).text(text?.value, percentageOfPageX(firstXTable + (!iText ? 3 : 18 * iText)), yRow + percentageOfPageY(padding));
         }
-      })
-      finalY = percentageOfPageY(firstYTable + (!i ? 5 : 5 + 7 * i) + 7)
-    })
+      });
 
-    const totalString = `Total: $${order?.articles?.reduce((acc, art) => acc + ((art?.price || 0) * (art?.quantity || 0)), 0)}`
+      finalY = yRow + percentageOfPageY(7); // Actualizar la posición final
+    });
 
+    // Total
+    checkAndAddPage(); // Verifica si necesita una nueva página para el total
+    const totalString = `Total: $${order?.articles?.reduce((acc, art) => acc + ((art?.price || 0) * (art?.quantity || 0)), 0)}`;
     const textWidth = doc.fill("#000000").font(`${assetsPath}/fonts/Montserrat-ExtraBold.ttf`).fontSize(18).widthOfString(totalString);
-
     const xStartPosition = percentageOfPageX(95) - textWidth;
+    doc.text(totalString, xStartPosition, finalY + percentageOfPageY(3), { width: 0, ellipsis: false });
 
-    doc.text(totalString, xStartPosition, finalY + percentageOfPageY(3), { width: 0, ellipsis: false })
+    const firmaString = "Firma y aclaracion"
+    const firmaWidth = doc.font(`${assetsPath}/fonts/Montserrat-Regular.ttf`).fontSize(14).widthOfString(firmaString)
+    const xFStartPosition = percentageOfPageX(95) - firmaWidth;
+    doc.text(firmaString, xFStartPosition, finalY + percentageOfPageY(6), { width: 0, ellipsis: false });
 
-    // PIE ------------------------------------------------------------
+    // TEXTO FINAL "Administración y ventas"
+    const pageWidth = doc.page.width;
+    const textsFooter = ["Administracion y ventas", "arcan.ventas@gmail.com", "7709-1657"];
+    const distanceBetweenTotal = 12;
+    const distanceBetweenTexts = 20;
 
-    const pageWidth = doc.page.width
-    const textsFooter = ["Administracion y ventas", "arcan.ventas@gmail.com", "7709-1657"]
-    const distanceBetweenTotal = 12
-    const distanceBetweenTexts = 2
-
+    // No añadimos una nueva página para estos textos si estamos cerca del final
+    finalY += percentageOfPageY(3);
     textsFooter.forEach((text, i) => {
-      const textWidth = doc.font(`${assetsPath}/fonts/Montserrat-${!i ? "SemiBold" : "Regular"}.ttf`).fontSize(14).widthOfString(text)
-      const textXPosition = (pageWidth - textWidth) / 2
+      const textWidth = doc.font(`${assetsPath}/fonts/Montserrat-${!i ? "SemiBold" : "Regular"}.ttf`).fontSize(14).widthOfString(text);
+      const textXPosition = (pageWidth - textWidth) / 2;
+      doc.text(text, textXPosition, finalY + distanceBetweenTotal + distanceBetweenTexts * i);
+    });
 
-      doc.text(text, textXPosition, finalY + percentageOfPageY(distanceBetweenTotal + distanceBetweenTexts * i))
-    })
+    // Agregar el pie de página solo en la última página, sin generar una nueva
+    doc.switchToPage(doc.bufferedPageRange().start + doc.bufferedPageRange().count - 1);  // Aseguramos que estamos en la última página
+    doc.font(`${assetsPath}/fonts/Montserrat-Regular.ttf`).fontSize(8).text("Documento no válido como factura", percentageOfPageX(5), doc.page.height - 150);
+    doc.text("Realizado el " + moment().format('D [de] MMMM [del] YYYY HH:mm'), percentageOfPageX(5), doc.page.height - 120);
 
-    doc.font(`${assetsPath}/fonts/Montserrat-Regular.ttf`).fontSize(8).text("Documento no válido como factura", percentageOfPageX(5), percentageOfPageY(88.5))
-    doc.text("Realizado el " + moment().format('D [de] MMMM [del] YYYY HH:mm'), percentageOfPageX(5), percentageOfPageY(90))
-
-    doc.end();
+    doc.end()
   }
 
 
@@ -315,7 +320,7 @@ export class PdfController {
     payments.forEach((payment) => {
       items.push({
         date: moment(payment?.date),
-        text: "Pago",
+        text: payment?.detail,
         amount: payment?.amount,
         payment: true
       })
@@ -324,11 +329,19 @@ export class PdfController {
     items = items.sort((a, b) => a?.date - b?.date)
 
     items.forEach((item, i) => {
-      const row = 3+i
-      ws.cell(row,dateCol).string(moment.utc(item?.date).format("DD-MM-YYYY")).style(styles["cell"])
-      ws.cell(row,motivoCol).string(item?.text).style(styles["cell"])
-      ws.cell(row,amountCol).number(item?.payment ? -item?.amount : item?.amount).style(styles["cell"])
-      ws.cell(row,totalCol).formula(`+${i ? xl.getExcelCellRef(row-1,totalCol) : "0"} + ${xl.getExcelCellRef(row,amountCol)}`).style(styles["cell"])
+      const finalStyle = {
+        ...styles["cell"], fill: {
+          type: "pattern",
+          patternType: "solid",
+          bgColor: item?.payment ? "#f79999" : "#8efa92",
+          fgColor: item?.payment ? "#f79999" : "#8efa92"
+        }
+      }
+      const row = 3 + i
+      ws.cell(row, dateCol).string(moment.utc(item?.date).format("DD-MM-YYYY")).style(finalStyle)
+      ws.cell(row, motivoCol).string(item?.text).style(finalStyle)
+      ws.cell(row, amountCol).number(item?.payment ? -item?.amount : item?.amount).style(finalStyle)
+      ws.cell(row, totalCol).formula(`+${i ? xl.getExcelCellRef(row - 1, totalCol) : "0"} + ${xl.getExcelCellRef(row, amountCol)}`).style(finalStyle)
     })
 
     wb.write(`Cuenta corriente ${client?.name || ""}.xlsx`, res)

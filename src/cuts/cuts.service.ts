@@ -247,4 +247,10 @@ export class CutsService {
     updateObj[property] = value
     return this.cutsModel.findOneAndUpdate({_id: new Types.ObjectId(id)}, {$set: updateObj}, {new: true})
   }
+
+  async deleteCut(id: string): Promise<any> {
+    const cut = await this.cutsModel.findOneAndDelete({_id: new Types.ObjectId(id)})
+    if (cut) await this.workshopOrderModel.deleteOne({cut: cut["_id"]})
+    return cut
+  }
 }

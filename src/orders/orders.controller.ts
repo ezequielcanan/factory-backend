@@ -132,4 +132,9 @@ export class OrdersController {
     const result = await this.ordersService.addSuborder(oid, number, cattown)
     return result
   }
+
+  @Put("/:id")
+  async updateOrder(@Param("id") id: string, @Query("property") property: string, @Query("value") value: string) {
+    return this.ordersService.updateOrder(id, property, value)
+  }
 }
