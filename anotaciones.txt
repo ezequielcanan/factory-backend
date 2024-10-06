@@ -1,0 +1,52 @@
+- Poner un boton de crear orden de corte 
+- Cambiarle el numero de telefono al cuenta 2 (7709-1657)
+- Armar una cuenta que solo cargue y vea pedidos de CATTOWN
+- Poner un buscador en pedidos
+- Cuando mandas un pedido a facturar se tiene que seguir viendo en pedidos, hasta que este facturado, como para poder controlarlo
+- Esta fallando las cantidades cuando pasas a facturar el pedido, se distorsionan (toma las cantidades desde el reservado, y no desde el pedido en si)
+- despues te iba a comentar que la opción de agregar mas cantidad de algún articulo no funciona bien y se traba
+
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+/// FACTURACION
+
+*** Observaciones pagos facturacion ***
+*** Colores cuenta corriente (ROJO PAGOS, VERDE PEDIDOS) ***
+*** - En el monto de pagos ***
+*** Precios desde facturacion ***
+*** buscador facturacion ***
+*** gradual rojo y naranja en facturacion ***
+*** firma y aclaracion cuenta 2 ***
+Cuenta 1 y 2 en pedido global
+Telofono fabrica y whatsapp administracion
+
+
+/// PEDIDOS
+
+*** Colores especificacion pedidos (DE LAS CARDS) ***
+*** talle, bordado y ubicacion ***
+*** detalle tecnico ***
+foto del bordado
+*** pasar a facturacion -> color celeste ***
+*** facturado -> color verde y en facturacion y finalizado ***
+otro mail en cattown cuenta 2
+*** descripcion pagos y borrarlos ***
+
+
+/// TALLERES
+
+talleres por producto
+
+
+/// CORTES
+
+*** eliminar corte manual ***
+
+
+/// MIX
+
+descuento por cliente y precios de lista
+*** bloc de notas en talleres y cortes ***
+preguntar sumar o no sumar al reservado
+*** arreglar precios, entran mal ***
+cattown ver solo su stock
