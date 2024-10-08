@@ -11,6 +11,8 @@ export class CreateClientDto {
 
   address: string
 
+  discount: number
+
   detail: string
 
   expreso: string

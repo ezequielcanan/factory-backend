@@ -21,6 +21,9 @@ export class Article {
 
     @Prop({type: String, enum: Society})
     society: Society
+
+    @Prop()
+    price: number
 }
 
 export const ArticleSchema = SchemaFactory.createForClass(Article)

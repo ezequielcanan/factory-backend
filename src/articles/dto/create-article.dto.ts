@@ -1,4 +1,4 @@
-import { IsNumber, MinLength } from "class-validator";
+import { IsNumber, IsOptional, MinLength } from "class-validator";
 
 export class CreateArticleDto {
   @MinLength(1)
@@ -6,6 +6,10 @@ export class CreateArticleDto {
 
   @IsNumber()
   stock: number
+
+  @IsOptional()
+  @IsNumber()
+  price: number
   
   @MinLength(1)
   color: string

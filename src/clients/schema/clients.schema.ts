@@ -22,6 +22,9 @@ export class Client {
   detail: string
 
   @Prop()
+  discount: number
+
+  @Prop()
   expreso: string
 
   @Prop()
