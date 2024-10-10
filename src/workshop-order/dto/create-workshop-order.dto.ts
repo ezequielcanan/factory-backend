@@ -8,4 +8,7 @@ export class CreateWorkshopOrderDto {
   cut: string
 
   date: Date
+
+  @IsOptional()
+  articles: String[]
 }

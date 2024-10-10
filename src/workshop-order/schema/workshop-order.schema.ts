@@ -25,6 +25,9 @@ export class WorkshopOrder {
 
   @Prop()
   detail: string
+
+  @Prop({ type: [String] })
+  articles: String[]
 }
 
 export const WorkshopOrderSchema = SchemaFactory.createForClass(WorkshopOrder)
