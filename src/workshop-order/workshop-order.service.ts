@@ -34,6 +34,10 @@ export class WorkshopOrderService {
     return this.workshopOrderModel.updateOne({_id: new Types.ObjectId(id)}, {$set: order})
   }
 
+  async deleteWorkshopOrder(id: string): Promise<any> {
+    return this.workshopOrderModel.findOneAndDelete({_id: new Types.ObjectId(id)})
+  }
+
   async receiveWorkshopOrder(id: string): Promise<any> {
     const workshopOrder = await this.getWorkshopOrder(id)
 

@@ -141,20 +141,8 @@ export class CutsService {
         }
       },
       {
-        $addFields: {
-          workshopOrder: {
-            $cond: {
-              if: { $ne: ['$workshopOrder', null] },
-              then: '$workshopOrder',
-              else: '$$REMOVE'
-            }
-          }
-        }
-      },
-      {
         $project: {
           orderDetails: 0,
-          workshopOrders: 0,
           filteredArticles: 0
         }
       }
@@ -162,14 +150,13 @@ export class CutsService {
 
     const finalCuts = await this.getCutsWithPopulatedArticles(cutsWithArticlesToCut)
 
-
-    return finalCuts.filter(c => !c?.workshopOrder)
+    return finalCuts.filter(c => !c?.workshopOrders?.some(o => o?.items?.length))
   }
 
   async getFinishedCuts(): Promise<Cut[] | undefined> {
     const cuts = await this.cutsModel.find()
     const finalCuts = []
-    const workshopOrders = await this.workshopOrderModel.find()
+    const workshopOrders = await this.workshopOrderModel.find({items: { $gt: 1 }})
     workshopOrders.forEach(w => {
       const cutIndex = cuts.findIndex(c => String(c?._id) == String(w?.cut?._id))
       

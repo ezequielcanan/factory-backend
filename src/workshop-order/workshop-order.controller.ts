@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Post, Put } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Post, Put } from '@nestjs/common';
 import { WorkshopOrderService } from './workshop-order.service';
 import { CreateWorkshopOrderDto } from './dto/create-workshop-order.dto';
 
@@ -31,5 +31,10 @@ export class WorkshopOrderController {
   @Put("/receive/:id")
   async receiveWorkshopOrder(@Param() id: string) {
     return this.workshopOrderService.receiveWorkshopOrder(id)
+  }
+
+  @Delete("/:id")
+  async deleteWorkshopOrder(@Param() id: string) {
+    return this.workshopOrderService.deleteWorkshopOrder(id)
   }
 }

@@ -1,6 +1,7 @@
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
 import { HydratedDocument, Types } from "mongoose";
 import { Cut } from "src/cuts/schema/cuts.schema";
+import { Item, ItemSchema } from "src/orders/schemas/item.schema";
 import { Workshop } from "src/workshops/schema/workshops.schema";
 
 @Schema()
@@ -28,6 +29,9 @@ export class WorkshopOrder {
 
   @Prop({ type: [String] })
   articles: String[]
+
+  @Prop({type: [ItemSchema]})
+  items: Item[]
 }
 
 export const WorkshopOrderSchema = SchemaFactory.createForClass(WorkshopOrder)
