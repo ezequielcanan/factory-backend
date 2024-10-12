@@ -47,6 +47,5 @@ talleres por producto
 
 *** descuento por cliente y precios de lista ***
 *** bloc de notas en talleres y cortes ***
-preguntar sumar o no sumar al reservado
 *** arreglar precios, entran mal ***
 cattown ver solo su stock

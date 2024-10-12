@@ -1,4 +1,6 @@
-import { IsOptional, IsString } from "class-validator";
+import { Type } from "class-transformer";
+import { IsArray, IsOptional, IsString, ValidateNested } from "class-validator";
+import { ItemDto } from "src/orders/dto/create-order.dto";
 
 export class CreateWorkshopOrderDto {
   @IsString()
@@ -9,6 +11,8 @@ export class CreateWorkshopOrderDto {
 
   date: Date
 
-  @IsOptional()
-  articles: String[]
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => ItemDto)
+  articles: ItemDto[];
 }

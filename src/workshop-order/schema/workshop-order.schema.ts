@@ -27,8 +27,8 @@ export class WorkshopOrder {
   @Prop()
   detail: string
 
-  @Prop({ type: [String] })
-  articles: String[]
+  @Prop({type: [ItemSchema]})
+  articles: Item[]
 
   @Prop({type: [ItemSchema]})
   items: Item[]
@@ -39,12 +39,16 @@ export const WorkshopOrderSchema = SchemaFactory.createForClass(WorkshopOrder)
 WorkshopOrderSchema.pre("findOne", function (next) {
   this.populate('cut')
   this.populate('workshop')
+  this.populate('articles.article')
+  this.populate('articles.customArticle')
   next()
 })
 
 WorkshopOrderSchema.pre("find", function (next) {
   this.populate('cut')
   this.populate('workshop')
+  this.populate('articles.article')
+  this.populate('articles.customArticle')
   next()
 })
 

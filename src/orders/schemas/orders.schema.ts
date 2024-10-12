@@ -48,16 +48,12 @@ export class Order {
 export const OrderSchema = SchemaFactory.createForClass(Order)
 
 OrderSchema.pre("findOne", function (next) {
-  this.populate('articles.article')
-  this.populate('articles.customArticle')
   this.populate('suborders')
   this.populate("client")
   next()
 })
 
 OrderSchema.pre("find", function (next) {
-  this.populate('articles.article')
-  this.populate('articles.customArticle')
   this.populate('suborders')
   this.populate("client")
   next()

@@ -29,8 +29,8 @@ export class WorkshopOrderController {
   }
 
   @Put("/receive/:id")
-  async receiveWorkshopOrder(@Param() id: string) {
-    return this.workshopOrderService.receiveWorkshopOrder(id)
+  async receiveWorkshopOrder(@Param() id: string, @Body() articles: any) {
+    return this.workshopOrderService.receiveWorkshopOrder(id, articles)
   }
 
   @Delete("/:id")
