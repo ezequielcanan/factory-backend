@@ -29,13 +29,13 @@ Telofono fabrica y whatsapp administracion
 foto del bordado
 *** pasar a facturacion -> color celeste ***
 *** facturado -> color verde y en facturacion y finalizado ***
-otro mail en cattown cuenta 2
+*** otro mail en cattown cuenta 2 ***
 *** descripcion pagos y borrarlos ***
 
 
 /// TALLERES
 
-talleres por producto
+*** talleres por producto ***
 
 
 /// CORTES
