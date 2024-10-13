@@ -150,11 +150,12 @@ export class PdfController {
   async generatePdf(@Param("oid") oid: string, @Res() res: Response) {
     const order = await this.ordersService.getOrder(oid);
     const doc = new PDFDocument({ size: "A4", margin: 50 });
+    const isArcan = order?.society == "Arcan"
 
     res.setHeader('Content-Type', 'application/pdf');
     res.setHeader('Content-Disposition', `attachment; filename=Presupuesto N°${order?.orderNumber}.pdf`);
 
-    const mainColor = order?.society == "Arcan" ? "#5357a1" : "#6b204e";
+    const mainColor = isArcan ? "#5357a1" : "#6b204e";
     doc.pipe(res);
 
     // ENCABEZADO
@@ -240,7 +241,7 @@ export class PdfController {
 
     // TEXTO FINAL "Administración y ventas"
     const pageWidth = doc.page.width;
-    const textsFooter = ["Administracion y ventas", "arcan.ventas@gmail.com", "7709-1657"];
+    const textsFooter = ["Administracion y ventas", isArcan ? "arcan.ventas@gmail.com" : "cattown.ventas@gmail.com", "7709-1657"];
     const distanceBetweenTotal = 12;
     const distanceBetweenTexts = 20;
 

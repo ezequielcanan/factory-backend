@@ -50,8 +50,10 @@ export class CutsService {
     return this.cutsModel.findOne({ order: orderId })
   } 
 
-  async getCutWithPopulatedArticles(cut, inOrder = true): Promise<any> {
-    let articles = cut?.order?.articles || (cut?.items?.length && cut.items) || cut?.manualItems
+  async getCutWithPopulatedArticles(cut, workshop = false): Promise<any> {
+    let classicArticles = cut?.order?.articles || (cut?.items?.length && cut.items) || cut?.manualItems
+    let workshopArticles = [...cut?.workshopOrders?.map(o => o?.articles)].flat()
+    let articles = workshop ? workshopArticles : classicArticles
 
     if (articles) {
       const populatedArticles = await Promise.all(articles?.map(async article => {
@@ -71,19 +73,33 @@ export class CutsService {
 
         return returnObj
       }))
-      if (cut?.order?.articles) {cut.order.articles = populatedArticles} else if (cut?.items?.length) {cut.items = populatedArticles} else {cut.manualItems = populatedArticles}
+      if (workshop) {
+        cut.workshopArticles = populatedArticles
+      } else if (cut?.order?.articles) {
+        cut.order.articles = populatedArticles
+      } else if (cut?.items?.length) {
+        cut.items = populatedArticles
+      } else {
+        cut.manualItems = populatedArticles
+      }
     }
 
     return cut
   }
 
-  async getCutsWithPopulatedArticles(cuts, inOrder = true): Promise<any> {
+  async getCutsWithPopulatedArticles(cuts, workshop = false): Promise<any> {
     return Promise.all(cuts?.map(async cut => {
-      return await this.getCutWithPopulatedArticles(cut, inOrder)
+      return await this.getCutWithPopulatedArticles(cut, workshop)
     }))
   }
 
-  async getCuts(): Promise<Cut[] | undefined> {
+  async getCutsAgreggation(forFinished = false): Promise<any> {
+    const matchCond = !forFinished ? {
+      $and: [
+        { $eq: ['$$article.hasToBeCut', true] },
+        { $gt: ['$$article.quantity', '$$article.booked'] }
+      ]
+    } : {}
     const cutsWithArticlesToCut = await this.cutsModel.aggregate([
       {
         $lookup: {
@@ -113,12 +129,7 @@ export class CutsService {
             $filter: {
               input: '$orderDetails.articles',
               as: 'article',
-              cond: {
-                $and: [
-                  { $eq: ['$$article.hasToBeCut', true] },
-                  { $gt: ['$$article.quantity', '$$article.booked'] }
-                ]
-              }
+              cond: matchCond
             }
           }
         }
@@ -148,24 +159,54 @@ export class CutsService {
       }
     ])
 
-    const finalCuts = await this.getCutsWithPopulatedArticles(cutsWithArticlesToCut)
+    const finalCuts = await this.getCutsWithPopulatedArticles(cutsWithArticlesToCut, forFinished)
 
-    return finalCuts.filter(c => !c?.workshopOrders?.some(o => o?.items?.length))
+    return finalCuts
+  }
+
+  async getCuts(): Promise<Cut[] | undefined> {
+    const finalCuts = await this.getCutsAgreggation()
+    return finalCuts.filter(c => {
+      const articlesInWorkshops = c?.workshopOrders?.map(order => {
+        return order?.articles?.map(art => String(art?.article ? art?.article?._id : art?.customArticle?._id))
+      }).flat()
+      const cutArticles = (c?.order ? c?.order?.articles : c?.manualItems)?.map(art => String(art?.article ? art?.article?._id : art?.customArticle?._id))
+      
+      let notInWorkshopAnArticle = false
+      cutArticles.forEach(a => {
+        if (!articlesInWorkshops.includes(a)) {
+          notInWorkshopAnArticle = true
+        }
+      })
+
+      if (!notInWorkshopAnArticle && c?.workshopOrders?.every(o => o?.articles?.every(art => Number(art?.quantity || 0) - Number(art?.booked || 0) == (art?.received || 0)))) {
+        return false
+      } else {
+        return true
+      }
+    })
   }
 
   async getFinishedCuts(): Promise<Cut[] | undefined> {
-    const cuts = await this.cutsModel.find()
-    const finalCuts = []
-    const workshopOrders = await this.workshopOrderModel.find({items: { $gt: 1 }})
-    workshopOrders.forEach(w => {
-      const cutIndex = cuts.findIndex(c => String(c?._id) == String(w?.cut?._id))
-      
-      if (cutIndex != -1) {
-        finalCuts.push(cuts[cutIndex])
+    const finalCuts = await this.getCutsAgreggation(true)
+    return finalCuts.filter(c => {
+      const articlesInWorkshops = c?.workshopOrders?.map(order => {
+        return order?.articles?.map(art => String(art?.article ? art?.article?._id : art?.customArticle?._id))
+      }).flat()
+      const cutArticles = (c?.order ? c?.order?.articles : c?.manualItems)?.map(art => String(art?.article ? art?.article?._id : art?.customArticle?._id))
+      let notInWorkshopAnArticle = false
+      cutArticles.forEach(a => {
+        if (!articlesInWorkshops.includes(a)) {
+          notInWorkshopAnArticle = true
+        }
+      })
+
+      if (!notInWorkshopAnArticle && c?.workshopOrders?.every(o => o?.articles?.every(art => Number(art?.quantity || 0) - Number(art?.booked || 0) == (art?.received || 0)))) {
+        return true
+      } else {
+        return false
       }
     })
-    
-    return await this.getCutsWithPopulatedArticles(finalCuts, false)
   }
 
   async getCut(id: string): Promise<Cut | undefined> {
@@ -203,26 +244,10 @@ export class CutsService {
             $arrayElemAt: ['$workshopOrders', 0]
           }
         }
-      },
-      {
-        $addFields: {
-          workshopOrder: {
-            $cond: {
-              if: { $ne: ['$workshopOrder', null] },
-              then: '$workshopOrder',
-              else: '$$REMOVE'
-            }
-          }
-        }
-      },
-      {
-        $project: {
-          workshopOrders: 0
-        }
       }
     ]))[0]
 
-    return await this.getCutWithPopulatedArticles(cut, !cut?.items?.length)
+    return await this.getCutWithPopulatedArticles(cut, false)
   }
 
   async deleteCutByOrder(id: string): Promise<Cut | undefined> {

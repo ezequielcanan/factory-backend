@@ -39,21 +39,23 @@ export class WorkshopOrderService {
   }
 
   async updateArticleReceived(oid: string, aid: string, qty: string, custom: string): Promise<any> {
-    if (parseInt(qty) >= 0) {
-      const findObj = this.ordersService.getFindObjForArticle(oid, aid, custom)
-      const setObj = {
-        $set: {
-          "articles.$.received": parseInt(qty)
-        }
+    const workshopOrder = await this.getWorkshopOrder(oid)
+    const article = workshopOrder?.articles?.find(art => String(art?.[custom ? "customArticle" : "article"]?._id) == aid)
+
+    const findObj = this.ordersService.getFindObjForArticle(oid, aid, custom)
+    const setObj = {
+      $set: {
+        "articles.$.received": parseInt(qty) >= 0 ? parseInt(qty) : 0
       }
-      const result = await this.workshopOrderModel.updateOne(
-        findObj,
-        setObj
-      );
-
-
-      return result;
     }
+    const result = await this.workshopOrderModel.updateOne(
+      findObj,
+      setObj
+    );
+
+
+    return result;
+
   }
 
   async receiveWorkshopOrder(id: string, articles: any): Promise<any> {
@@ -83,12 +85,21 @@ export class WorkshopOrderService {
     
 
     return this.workshopOrderModel.updateOne({_id: new Types.ObjectId(id)}, {$set: {deliveryDate: new Date()}})*/
-    
+
     await Promise.all(articles?.map(async a => {
-      this.updateArticleReceived(workshopOrder["_id"], a[a.article ? "article" : "customArticle"]?._id, (a?.received || 0) + (a?.receiving || 0), a.article ? "" : "true")
-      if (workshopOrder?.cut["order"]) this.ordersService.updateArticleBooked(workshopOrder?.cut["order"]?._id, a[a.article ? "article" : "customArticle"]?._id, (a.booked || 0) + (a?.receiving || 0), a.article ? "" : "true")
+      const quantityInWorkshop = Number(a?.quantity || 0) - Number(a?.booked || 0)
+      const tryingToRecibe = (a?.received || 0) + (a?.receiving || 0)
+      const updatingQuantity = tryingToRecibe < 0 ? (-a?.received || 0) : (quantityInWorkshop >= tryingToRecibe ? (a?.receiving || 0) : 0)
+      const isCustom = a.article ? "article" : "customArticle"
+      this.updateArticleReceived(workshopOrder["_id"], a[isCustom]?._id, (a?.received || 0) + updatingQuantity, a.article ? "" : "true")
+
       if (a.article) {
-        this.articlesService.updateStock((a?.article?.stock || 0) + a?.receiving, a?.article?._id)
+        this.articlesService.updateStock((a?.article?.stock || 0) + updatingQuantity, a?.article?._id)
+      }
+      if (workshopOrder?.cut["order"]) {
+        const article = workshopOrder?.cut["order"]?.articles?.find(art => art[isCustom]?._id == a[isCustom]?._id)
+        const booked = (article?.booked || 0) + (updatingQuantity || 0)
+        this.ordersService.updateArticleBooked(workshopOrder?.cut["order"]?._id, a[isCustom]?._id, booked > article?.quantity ? article?.quantity : booked, a.article ? "" : "true")
       }
     }))
 
