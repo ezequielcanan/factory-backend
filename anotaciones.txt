@@ -17,7 +17,7 @@
 *** buscador facturacion ***
 *** gradual rojo y naranja en facturacion ***
 *** firma y aclaracion cuenta 2 ***
-Cuenta 1 y 2 en pedido global
+*** Cuenta 1 y 2 en pedido global ***
 Telofono fabrica y whatsapp administracion
 
 
@@ -48,4 +48,4 @@ foto del bordado
 *** descuento por cliente y precios de lista ***
 *** bloc de notas en talleres y cortes ***
 *** arreglar precios, entran mal ***
-cattown ver solo su stock
+*** cattown ver solo su stock ***

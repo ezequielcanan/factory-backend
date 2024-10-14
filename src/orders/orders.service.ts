@@ -37,6 +37,13 @@ export class OrdersService {
     return this.orderModel.find().sort({ orderNumber: "desc" }).limit(1)
   }
 
+  async subordersFlat(order): Promise<Order | undefined> {
+    if (order?.suborders?.length) {
+      order.articles = order?.suborders?.map(suborder => suborder?.["articles"]).flat()
+      order.articles = await this.populateArticlesFromOrder(order)
+    }
+    return order
+  }
 
   async getOrder(id: string, number: boolean = false): Promise<Order | undefined> {
     const findObj = {}
@@ -51,7 +58,7 @@ export class OrdersService {
   }
 
   async getOrderAndCut(id: string, number: boolean = false): Promise<any> {
-    const order = await this.getOrder(id, number)
+    const order = await this.subordersFlat(await this.getOrder(id, number))
     const cut = await this.cutsService.getCutFromOrder(!number ? id : order["_id"])
     return { order, cut }
   }
@@ -319,5 +326,19 @@ export class OrdersService {
     const updateObj = {}
     updateObj[property] = (value == "true" || value == "false" ) ? Boolean(value) : value
     return this.orderModel.findOneAndUpdate({_id: new Types.ObjectId(id)}, {$set: updateObj}, {new: true})
+  }
+
+  async populateArticlesFromOrder(order): Promise<any> {
+    const articles = []
+    await Promise.all(order?.articles?.map(async article => {
+      if (article?.article) {
+        const result = await this.articlesModel.findOne({_id: new Types.ObjectId(article?.article?._id)})
+        articles.push({...article, article: result})
+      } else {
+        const result = await this.customArticlesModel.findOne({_id: new Types.ObjectId(article?.customArticle?._id)})
+        articles.push({...article, customArticle: result})
+      }
+    }))
+    return articles
   }
 }

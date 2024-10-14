@@ -40,6 +40,6 @@ export class ClientsService {
   }
 
   async getOrdersByClient(cid: string): Promise<any> {
-    return this.orderModel.find({client: new Types.ObjectId(cid), finished: true})
+    return this.orderModel.find({client: new Types.ObjectId(cid), finished: true}).populate("articles.article").populate("articles.customArticle")
   }
 }

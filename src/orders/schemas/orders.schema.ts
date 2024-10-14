@@ -50,11 +50,39 @@ export const OrderSchema = SchemaFactory.createForClass(Order)
 OrderSchema.pre("findOne", function (next) {
   this.populate('suborders')
   this.populate("client")
+  this.populate({
+    path: 'suborders',
+    populate: {
+      path: 'articles.article',
+      model: 'Article',
+    }
+  });
+  this.populate({
+    path: 'suborders',
+    populate: {
+      path: 'articles.customArticle',
+      model: 'CustomArticle', // Reemplaza esto con el nombre del modelo correspondiente
+    }
+  });
   next()
 })
 
 OrderSchema.pre("find", function (next) {
   this.populate('suborders')
+  this.populate({
+    path: 'suborders',
+    populate: {
+      path: 'articles.article',
+      model: 'Article',
+    }
+  });
+  this.populate({
+    path: 'suborders',
+    populate: {
+      path: 'articles.customArticle',
+      model: 'CustomArticle', // Reemplaza esto con el nombre del modelo correspondiente
+    }
+  });
   this.populate("client")
   next()
 })

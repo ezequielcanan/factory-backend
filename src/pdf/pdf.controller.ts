@@ -121,6 +121,11 @@ export class PdfController {
     const order = await this.ordersService.getOrder(oid)
     const doc = new PDFDocument({ size: "A4" });
 
+    if (order?.suborders?.length) {
+      order.articles = order?.suborders?.map(suborder => suborder?.["articles"]).flat()
+      order.articles = await this.ordersService.populateArticlesFromOrder(order)
+    }
+
     res.setHeader('Content-Type', 'application/pdf');
     res.setHeader('Content-Disposition', `attachment; filename=Presupuesto N°${order?.orderNumber}.pdf`);
 
@@ -151,6 +156,12 @@ export class PdfController {
     const order = await this.ordersService.getOrder(oid);
     const doc = new PDFDocument({ size: "A4", margin: 50 });
     const isArcan = order?.society == "Arcan"
+
+    if (order?.suborders?.length) {
+      order.articles = order?.suborders?.map(suborder => suborder?.["articles"]).flat()
+      order.articles = await this.ordersService.populateArticlesFromOrder(order)
+    }
+
 
     res.setHeader('Content-Type', 'application/pdf');
     res.setHeader('Content-Disposition', `attachment; filename=Presupuesto N°${order?.orderNumber}.pdf`);
@@ -314,7 +325,6 @@ export class PdfController {
     let items = []
 
     orders.forEach((order, i) => {
-      console.log(order.finalDate)
       items.push({ date: moment(order?.finalDate, "DD-MM-YYYY"), text: `Pedido N° ${order?.orderNumber}`, amount: order?.articles?.reduce((acc, art) => acc + ((art?.quantity || 0) * (art?.price || 0) * (order?.mode ? 1.21 : 1)), 0) })
     })
 
