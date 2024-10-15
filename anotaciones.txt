@@ -49,3 +49,7 @@ foto del bordado
 *** bloc de notas en talleres y cortes ***
 *** arreglar precios, entran mal ***
 *** cattown ver solo su stock ***
+
+excel stock
+cuenta 2 texto sobre texto
+corte cortado cambio de color
