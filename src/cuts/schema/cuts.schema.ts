@@ -22,6 +22,9 @@ export class Cut {
 
   @Prop()
   description: string
+
+  @Prop()
+  cut: boolean
 }
 
 export const CutsSchema = SchemaFactory.createForClass(Cut)

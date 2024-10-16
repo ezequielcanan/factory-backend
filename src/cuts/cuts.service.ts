@@ -194,6 +194,7 @@ export class CutsService {
         return order?.articles?.map(art => String(art?.article ? art?.article?._id : art?.customArticle?._id))
       }).flat()
       const cutArticles = (c?.order ? c?.order?.articles : c?.manualItems)?.map(art => String(art?.article ? art?.article?._id : art?.customArticle?._id))
+      const allBooked = c?.order ? c?.order?.articles?.every(art => art?.quantity == art?.booked) : false
       let notInWorkshopAnArticle = false
       cutArticles.forEach(a => {
         if (!articlesInWorkshops.includes(a)) {
@@ -201,7 +202,7 @@ export class CutsService {
         }
       })
 
-      if (!notInWorkshopAnArticle && c?.workshopOrders?.every(o => o?.articles?.every(art => Number(art?.quantity || 0) - Number(art?.booked || 0) == (art?.received || 0)))) {
+      if ((!notInWorkshopAnArticle || (allBooked && c?.workshopArticles?.length)) && c?.workshopOrders?.every(o => o?.articles?.every(art => Number(art?.quantity || 0) - Number(art?.booked || 0) == (art?.received || 0)))) {
         return true
       } else {
         return false
@@ -256,7 +257,7 @@ export class CutsService {
 
   async updateCut(id: string, property: string, value: string): Promise<Cut | undefined> {
     const updateObj = {}
-    updateObj[property] = value
+    updateObj[property] = value == "true" ? true : value
     return this.cutsModel.findOneAndUpdate({_id: new Types.ObjectId(id)}, {$set: updateObj}, {new: true})
   }
 

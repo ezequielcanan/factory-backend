@@ -132,20 +132,20 @@ export class PdfController {
     const mainColor = order?.society == "Arcan" ? "#5357a1" : "#6b204e"
 
     doc.pipe(res)
-    doc.fill("#000000").font(`${assetsPath}/fonts/Montserrat-SemiBold.ttf`).fontSize(6).text(order?.client["name"], percentageOfPageX(16.5), percentageOfPageY(9.59))
-    doc.text(order?.client["address"], percentageOfPageX(16.5), percentageOfPageY(11))
-    doc.text(order?.client["expreso"], percentageOfPageX(16.5), percentageOfPageY(13.95))
-    doc.text(order?.client["expresoAddress"], percentageOfPageX(16.5), percentageOfPageY(15.55))
+    doc.fill("#000000").font(`${assetsPath}/fonts/Montserrat-SemiBold.ttf`).fontSize(6).text(order?.client["name"], percentageOfPageX(18.5), percentageOfPageY(12.89))
+    doc.text(order?.client["address"], percentageOfPageX(18.5), percentageOfPageY(14.8))
+    doc.text(order?.client["expreso"], percentageOfPageX(18.5), percentageOfPageY(17.75))
+    doc.text(order?.client["expresoAddress"], percentageOfPageX(18.5), percentageOfPageY(19.35))
 
-    doc.text(moment().format("DD"), percentageOfPageX(49), percentageOfPageY(4.85))
-    doc.text(moment().format("MM"), percentageOfPageX(54), percentageOfPageY(4.85))
-    doc.text(moment().format("YYYY"), percentageOfPageX(62), percentageOfPageY(4.85))
+    doc.text(moment().format("DD"), percentageOfPageX(72), percentageOfPageY(5.9))
+    doc.text(moment().format("MM"), percentageOfPageX(82), percentageOfPageY(5.9))
+    doc.text(moment().format("YYYY"), percentageOfPageX(92), percentageOfPageY(5.9))
 
 
     const padding = 1.2
     order?.articles?.forEach((article, i) => {
-      doc.text(article?.quantity, percentageOfPageX(11), percentageOfPageY(20 + padding * i))
-      doc.text(article?.article ? article?.article["description"] : article?.customArticle["detail"], percentageOfPageX(28.5), percentageOfPageY(20 + padding * i))
+      doc.text(article?.quantity, percentageOfPageX(11), percentageOfPageY(29.5 + padding * i))
+      doc.text(article?.article ? article?.article["description"] : article?.customArticle["detail"], percentageOfPageX(28.5), percentageOfPageY(29.5 + padding * i))
     })
 
     doc.end();
