@@ -16,8 +16,8 @@ export class OrdersController {
 
   
   @Get()
-  async getOrders(@Query("society") society: string, @Query("page") page: string, @Query("finished") finished: string) {
-    return this.ordersService.getOrders(society, page, finished)
+  async getOrders(@Query("society") society: string, @Query("page") page: string, @Query("search") search: string, @Query("finished") finished: string) {
+    return this.ordersService.getOrders(society, page, search, finished)
   }
 
   @Get("/:id")

@@ -54,3 +54,6 @@ Telofono fabrica y whatsapp administracion
 *** cuenta 2 texto sobre texto ***
 *** bordado o estampado ***
 *** corte cortado cambio de color ***
+filtrar pedidos verdes
+pedidos por color
+home fecha facturacion

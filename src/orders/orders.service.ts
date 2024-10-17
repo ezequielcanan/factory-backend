@@ -67,7 +67,7 @@ export class OrdersService {
     return this.orderModel.find({client: new Types.ObjectId(cid)})
   }
 
-  async getOrders(society: string, page: string, finished: string): Promise<any | undefined> {
+  async getOrders(society: string, page: string, search: string, finished: string): Promise<any | undefined> {
     const limit = 25
     const skip = (Number(page) - 1) * limit
 
