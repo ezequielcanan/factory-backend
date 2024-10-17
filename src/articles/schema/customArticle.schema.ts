@@ -17,6 +17,9 @@ export class CustomArticle {
   
   @Prop()
   bordado: string
+
+  @Prop()
+  bordadoType: string
 }
 
 export const CustomArticleSchema = SchemaFactory.createForClass(CustomArticle)

@@ -19,4 +19,9 @@ export class CreateCustomArticleDto {
   @IsOptional()
   @IsString()
   bordado: string
+
+  
+  @IsOptional()
+  @IsString()
+  bordadoType: string
 }

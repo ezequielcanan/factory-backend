@@ -19,7 +19,7 @@ export class ArticlesService {
     return this.articleModel.create(article)
   }
 
-  async getArticles(page: string, color: string, size: string, category: string, society: string, search: string): Promise<Article[] | any> {
+  async getArticles(page: string, color: string, size: string, category: string, society: string, search: string, paginate: boolean = true): Promise<Article[] | any> {
     const limit = 25
     const skip = (Number(page) - 1) * limit
 
@@ -31,7 +31,14 @@ export class ArticlesService {
     search && (findObj["description"] = { $regex: search, $options: 'i' })
 
 
-    const articles = await this.articleModel.find(findObj).sort({description: 1}).skip(skip).limit(limit).lean().exec()
+    let query = this.articleModel.find(findObj).sort({ description: 1 });
+
+    // Aplica paginación solo si paginate es true
+    if (paginate) {
+      query = query.skip(skip).limit(limit);
+    }
+
+    const articles = await query.lean().exec();
     const newArticles = []
     await Promise.all(articles.map(async (article, i) => {
       const booked = await this.ordersService.getBookedQuantity(article?._id)

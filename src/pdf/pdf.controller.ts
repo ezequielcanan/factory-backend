@@ -1,4 +1,4 @@
-import { Controller, Get, Param, Res } from '@nestjs/common';
+import { Controller, Get, Param, Query, Res } from '@nestjs/common';
 import { Response } from 'express';
 import { ClientsService } from 'src/clients/clients.service';
 import { OrdersService } from 'src/orders/orders.service';
@@ -7,6 +7,7 @@ import * as PDFDocument from 'pdfkit';
 import * as moment from 'moment'
 import 'moment/locale/es'
 import { PaymentsService } from 'src/payments/payments.service';
+import { ArticlesService } from 'src/articles/articles.service';
 
 const fontHeadStyle = {
   font: {
@@ -110,7 +111,8 @@ export class PdfController {
   constructor(
     private readonly clientsService: ClientsService,
     private readonly ordersService: OrdersService,
-    private readonly paymentsService: PaymentsService
+    private readonly paymentsService: PaymentsService,
+    private readonly articlesService: ArticlesService
   ) { }
 
   @Get('/1/:oid')
@@ -231,7 +233,17 @@ export class PdfController {
         if (text?.notText) {
           doc.image(text?.value, percentageOfPageX(firstXTable + (!iText ? 3 : 18 * iText)), yRow + percentageOfPageY(0.25), { fit: [percentageOfPageX(12), percentageOfPageY(6.5)], align: 'center', valign: 'center' });
         } else {
-          doc.fill("#000000").font(`${assetsPath}/fonts/Montserrat-SemiBold.ttf`).fontSize(10).text(text?.value, percentageOfPageX(firstXTable + (!iText ? 3 : 18 * iText)), yRow + percentageOfPageY(padding));
+          doc.fill("#000000").font(`${assetsPath}/fonts/Montserrat-SemiBold.ttf`).fontSize(iText != 2 ? 10 : 8)
+
+          // Calculamos la altura del texto
+          const containerWidth = percentageOfPageX(12)
+          const textHeight = doc.heightOfString(text?.value, { width: containerWidth });
+
+          // Calculamos la posición Y para centrarlo verticalmente
+          const yPosition = yRow + (percentageOfPageY(7) - textHeight) / 2
+
+          doc.text(text?.value, percentageOfPageX(firstXTable + (!iText ? 3 : 18 * iText)), yPosition, { width: containerWidth, ellipsis: true });
+
         }
       });
 
@@ -356,5 +368,73 @@ export class PdfController {
     })
 
     wb.write(`Cuenta corriente ${client?.name || ""}.xlsx`, res)
+  }
+
+  @Get("/articles")
+  async generateArticlesExcel(@Query("society") society: string, @Res() res: Response) {
+    const articles = await this.articlesService.getArticles(null, null, null, null, society, null, false)
+    const wb = new xl.Workbook()
+    const ws = wb.addWorksheet(`STOCK ${society?.toUpperCase() || "GENERAL"}`, {
+      sheetFormat: {
+        'defaultColWidth': 35,
+        'defaultRowHeight': 30,
+      }
+    })
+
+    const styles = {
+      sectionHead: wb.createStyle({
+        ...fontHeadStyle,
+        ...textCenterStyle,
+        ...boldBorder,
+        ...bgHead,
+        numberFormat: '#,##0.00; -#,##0.00; -'
+      }),
+      importantCell: wb.createStyle({
+        font: {
+          bold: true
+        },
+        ...textCenterStyle,
+        ...thinBorder,
+        ...bgSectionInfo,
+        numberFormat: '#,##0.00; -#,##0.00; -'
+      }),
+      cell: wb.createStyle({
+        ...textCenterStyle,
+        ...thinBorder,
+        numberFormat: '#,##0.00; -#,##0.00; -'
+      })
+    }
+
+    ws.cell(1, 1, 1, 7, true).string(`Resumen de stock`).style(styles["sectionHead"])
+
+    const descriptionCol = 1
+    const categoryCol = 2
+    const colorCol = 3
+    const sizeCol = 4
+    const stockCol = 5
+    const priceCol = 6
+    const bookedCol = 7
+
+    ws.cell(2, descriptionCol).string(`ARTICULO`).style(styles["importantCell"])
+    ws.cell(2, categoryCol).string(`CATEGORIA`).style(styles["importantCell"])
+    ws.cell(2, colorCol).string(`COLOR`).style(styles["importantCell"])
+    ws.cell(2, sizeCol).string(`TALLE`).style(styles["importantCell"])
+    ws.cell(2, stockCol).string(`STOCK`).style(styles["importantCell"])
+    ws.cell(2, priceCol).string(`PRECIO`).style(styles["importantCell"])
+    ws.cell(2, bookedCol).string(`RESERVADO`).style(styles["importantCell"])
+
+    articles?.sort((a,b) => a?.description?.toLowerCase()?.localeCompare(b?.description?.toLowerCase())).forEach((item, i) => {
+      const row = 3 + i
+      ws.cell(row, descriptionCol).string(item?.description || "").style(styles["cell"])
+      ws.cell(row, categoryCol).string(item?.category || "").style(styles["cell"])
+      ws.cell(row, colorCol).string(item?.color || "").style(styles["cell"])
+      ws.cell(row, sizeCol).string(item?.size || "").style(styles["cell"])
+      ws.cell(row, stockCol).number(item?.stock || 0).style({...styles["cell"], numberFormat: ""})
+      ws.cell(row, priceCol).number(item?.price || 0).style(styles["cell"])
+      ws.cell(row, bookedCol).number(item?.booked || 0).style({...styles["cell"], numberFormat: ""})
+    })
+
+    wb.write(`STOCK ${society?.toUpperCase() || "GENERAL"}.xlsx`, res)
+
   }
 }

@@ -14,6 +14,7 @@ import { Item, ItemSchema } from 'src/orders/schemas/item.schema';
 import { CutsService } from 'src/cuts/cuts.service';
 import { PaymentsService } from 'src/payments/payments.service';
 import { Payment, PaymentSchema } from 'src/payments/schema/payments.schema';
+import { ArticlesService } from 'src/articles/articles.service';
 
 
 @Module({
@@ -31,6 +32,6 @@ import { Payment, PaymentSchema } from 'src/payments/schema/payments.schema';
     ConfigModule
   ],
   controllers: [PdfController],
-  providers: [OrdersService, ClientsService, CutsService, PaymentsService]
+  providers: [OrdersService, ClientsService, CutsService, PaymentsService, ArticlesService]
 })
 export class PdfModule {}
