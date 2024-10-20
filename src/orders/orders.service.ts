@@ -70,6 +70,7 @@ export class OrdersService {
   async getOrders(society: string, page: string, search: string, finished: string): Promise<any | undefined> {
     const limit = 25
     const skip = (Number(page) - 1) * limit
+    const matchClient = {$match: {}}
 
     const matchObj = {$match: {}}
     if (society) {
@@ -78,6 +79,10 @@ export class OrdersService {
 
     if (finished) {
       matchObj["$match"]["finished"] = true;
+    }
+
+    if (search) {
+      matchClient["$match"]["client.name"] = { $regex: search, $options: 'i' }
     }
 
     const result = await this.orderModel.aggregate([
@@ -93,6 +98,18 @@ export class OrdersService {
       {
         $unwind: { path: "$cut", preserveNullAndEmptyArrays: true },
       },
+      {
+        $lookup: {
+          from: "clients",
+          localField: "client",
+          foreignField: "_id",
+          as: "client"
+        }
+      },
+      {
+        $unwind: { path: "$client", preserveNullAndEmptyArrays: true },
+      },
+      matchClient,
       {
         $sort: {
           "finished": 1,
@@ -290,7 +307,7 @@ export class OrdersService {
 
   async deleteOrder(id: string): Promise<any> {
     const cut = await this.cutsService.deleteCutByOrder(id)
-    if (cut) await this.workshopOrdersModel.deleteOne({cut: cut["_id"]})
+    if (cut) await this.workshopOrdersModel.deleteMany({cut: cut["_id"]})
     return this.orderModel.deleteOne({_id: new Types.ObjectId(id)})
   }
 
