@@ -12,12 +12,23 @@ export class OrdersController {
     private readonly articlesService: ArticlesService,
     private readonly cutsService: CutsService,
     private config: ConfigService
-  ) {}
+  ) { }
 
-  
+
   @Get()
-  async getOrders(@Query("society") society: string, @Query("page") page: string, @Query("search") search: string, @Query("finished") finished: string) {
-    return this.ordersService.getOrders(society, page, search, finished)
+  async getOrders(@Query("society") society: string,
+    @Query("page") page: string,
+    @Query("search") search: string,
+    @Query("finished") finished: string,
+    @Query("one") colorOne: string,
+    @Query("two") colorTwo: string,
+    @Query("three") colorThree: string,
+    @Query("four") colorFour: string,
+    @Query("five") colorFive: string,
+    @Query("six") colorSix: string,
+
+  ) {
+    return this.ordersService.getOrders(society, page, search, finished, [colorOne, colorTwo, colorThree, colorFour, colorFive, colorSix]?.filter(c => c)?.map(c => parseInt(c)))
   }
 
   @Get("/:id")
@@ -41,7 +52,7 @@ export class OrdersController {
   async getArticleBooked(@Param("id") id: string) {
     const bookedQuantity = await this.ordersService.getBookedQuantity(id);
     const article = await this.articlesService.getArticle(id)
-    return {booked: bookedQuantity, stock: article?.stock}
+    return { booked: bookedQuantity, stock: article?.stock }
   }
 
   @Put("/mode/:id")
@@ -58,28 +69,28 @@ export class OrdersController {
 
   @Put("/quantity/:oid/:aid/:qty")
   async updateArticleQuantity(@Param() params: { oid: string, aid: string, qty: string }, @Query("custom") custom: string) {
-    const {oid, aid, qty} = params
+    const { oid, aid, qty } = params
     const result = await this.ordersService.updateArticleQuantity(oid, aid, qty, custom)
     return result
   }
 
   @Put("/booked/:oid/:aid/:qty")
   async updateArticleBooked(@Param() params: { oid: string, aid: string, qty: string }, @Query("custom") custom: string) {
-    const {oid, aid, qty} = params
+    const { oid, aid, qty } = params
     const result = await this.ordersService.updateArticleBooked(oid, aid, qty, custom)
     return result
   }
 
   @Put("/cut-state/:oid/:aid")
   async updateArticleCut(@Param() params: { oid: string, aid: string }, @Query("custom") custom: string) {
-    const {oid, aid} = params
+    const { oid, aid } = params
     const result = await this.ordersService.updateArticleCut(oid, aid, custom)
     return result
   }
 
   @Put("/price/:oid/:aid")
   async updateArticleUnitPrice(@Param() params: { oid: string, aid: string }, @Query("custom") custom: string, @Query("price") price: string) {
-    const {oid, aid} = params
+    const { oid, aid } = params
     const result = await this.ordersService.updateArticleUnitPrice(oid, aid, custom, price)
     return result
   }

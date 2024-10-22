@@ -67,7 +67,7 @@ export class OrdersService {
     return this.orderModel.find({client: new Types.ObjectId(cid)})
   }
 
-  async getOrders(society: string, page: string, search: string, finished: string): Promise<any | undefined> {
+  async getOrders(society: string, page: string, search: string, finished: string, colors: any): Promise<any | undefined> {
     const limit = 25
     const skip = (Number(page) - 1) * limit
     const matchClient = {$match: {}}
@@ -79,6 +79,51 @@ export class OrdersService {
 
     if (finished) {
       matchObj["$match"]["finished"] = true;
+    }
+    console.log(colors)
+    if (colors?.length) {
+      matchObj["$match"]["$or"] = []
+      
+      if (colors?.some(c => c == 6)) {
+        matchObj["$match"]["$or"].push({$expr: { 
+          $gte: [{ $size:{ $ifNull: ["$suborders", []] } }, 1]  // Verifica si la longitud de 'suborders' es >= 1
+        }})
+      }
+
+      if (colors?.some(c => c == 5)) {
+        matchObj["$match"]["$or"].push({finished: true})
+      }
+
+      if (colors?.some(c => c == 4)) {
+        matchObj["$match"]["$or"].push({inPricing: true})
+      }
+
+      if (colors?.some(c => c == 3)) {
+        matchObj["$match"]["$or"].push({
+          inPricing: false,
+          $expr: {
+            $eq: [
+              {
+                $size: {
+                  $filter: {
+                    input: "$articles",  // Campo array que estás filtrando
+                    as: "article",       // Alias para los elementos dentro de "articles"
+                    cond: { $eq: ["$$article.quantity", "$$article.booked"] }  // Comparar la cantidad con "booked"
+                  }
+                }
+              },
+              { $size: "$articles" }  // Compara con el tamaño total del array "articles"
+            ]
+          }
+        });
+      }
+
+      if (colors?.some(c => c == 3)) {
+        matchClient["$match"]["workshopOrder"] = {$exists: true}
+      }
+
+      if (!matchObj["$match"]["$or"]?.length) delete matchObj["$match"]["$or"]
+
     }
 
     if (search) {
@@ -109,6 +154,17 @@ export class OrdersService {
       {
         $unwind: { path: "$client", preserveNullAndEmptyArrays: true },
       },
+      {
+        $lookup: {
+          from: "workshop-order",
+          localField: "cut",
+          foreignField: "cut",
+          as: "workshopOrder"
+        }
+      },
+      {
+        $unwind: { path: "$workshopOrder", preserveNullAndEmptyArrays: true },
+      },
       matchClient,
       {
         $sort: {
@@ -137,7 +193,6 @@ export class OrdersService {
       const workshop = await this.workshopOrdersModel.findOne({cut: order?.cut?._id})
       result[orderIndex].workshop = workshop
       result[orderIndex].articles = articles
-      result[orderIndex].client = client
     }))
     return result
   }
