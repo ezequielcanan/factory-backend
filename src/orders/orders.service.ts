@@ -64,15 +64,15 @@ export class OrdersService {
   }
 
   async getOrdersByClient(cid: string): Promise<Order[] | undefined> {
-    return this.orderModel.find({client: new Types.ObjectId(cid)})
+    return this.orderModel.find({ client: new Types.ObjectId(cid) })
   }
 
   async getOrders(society: string, page: string, search: string, finished: string, colors: any): Promise<any | undefined> {
     const limit = 25
     const skip = (Number(page) - 1) * limit
-    const matchClient = {$match: {}}
+    const matchClient = { $match: {} }
 
-    const matchObj = {$match: {}}
+    const matchObj = { $match: {} }
     if (society) {
       matchObj["$match"]["society"] = society
     }
@@ -80,46 +80,99 @@ export class OrdersService {
     if (finished) {
       matchObj["$match"]["finished"] = true;
     }
-    console.log(colors)
+
     if (colors?.length) {
       matchObj["$match"]["$or"] = []
-      
-      if (colors?.some(c => c == 6)) {
-        matchObj["$match"]["$or"].push({$expr: { 
-          $gte: [{ $size:{ $ifNull: ["$suborders", []] } }, 1]  // Verifica si la longitud de 'suborders' es >= 1
-        }})
+
+      const agrupatedObj = {
+        $expr: {
+          $gte: [{ $size: { $ifNull: ["$suborders", []] } }, 1]  // Verifica si la longitud de 'suborders' es >= 1
+        }
       }
 
+      if (colors?.some(c => c == 6)) {
+        matchObj["$match"]["$or"].push(agrupatedObj)
+      }
+
+      const finishedObj = { $nor: [agrupatedObj], finished: true }
+
       if (colors?.some(c => c == 5)) {
-        matchObj["$match"]["$or"].push({finished: true})
+        matchObj["$match"]["$or"].push(finishedObj)
+      }
+
+      const separatedObj = {
+        $nor: [finishedObj],
+        inPricing: true,
+        $or: [
+          { finished: { $exists: false } },
+          { finished: { $eq: false } }
+        ]
       }
 
       if (colors?.some(c => c == 4)) {
-        matchObj["$match"]["$or"].push({inPricing: true})
+        matchObj["$match"]["$or"].push(separatedObj)
+      }
+
+      const forSeparateObj = {
+        $and: [
+          { $nor: [separatedObj] },
+          { $nor: [agrupatedObj] },
+          {
+            $or: [
+              { inPricing: { $exists: false } },
+              { inPricing: { $eq: false } }
+            ]
+          },
+          {
+            $expr: {
+              $eq: [
+                {
+                  $size: {
+                    $filter: {
+                      input: "$articles",  // Campo array que estás filtrando
+                      as: "article",       // Alias para los elementos dentro de "articles"
+                      cond: { $eq: ["$$article.quantity", "$$article.booked"] }  // Comparar la cantidad con "booked"
+                    }
+                  }
+                },
+                { $size: "$articles" }
+              ]
+            }
+          }
+        ]
       }
 
       if (colors?.some(c => c == 3)) {
-        matchObj["$match"]["$or"].push({
-          inPricing: false,
-          $expr: {
-            $eq: [
-              {
-                $size: {
-                  $filter: {
-                    input: "$articles",  // Campo array que estás filtrando
-                    as: "article",       // Alias para los elementos dentro de "articles"
-                    cond: { $eq: ["$$article.quantity", "$$article.booked"] }  // Comparar la cantidad con "booked"
-                  }
-                }
-              },
-              { $size: "$articles" }  // Compara con el tamaño total del array "articles"
+        matchObj["$match"]["$or"].push(forSeparateObj);
+      }
+
+      const inWorkshopOrder = {
+        $and: [
+          { $nor: [forSeparateObj], },
+          {
+            $expr: {
+              $gte: [{ $size: { $ifNull: ["$workshopOrder", []] } }, 1]  // Verifica si la longitud de 'suborders' es >= 1
+            }
+          },
+          {
+            $or: [
+              { inPricing: { $exists: false } },
+              { inPricing: { $eq: false } }
             ]
           }
-        });
+        ]
       }
 
-      if (colors?.some(c => c == 3)) {
-        matchClient["$match"]["workshopOrder"] = {$exists: true}
+      if (colors?.some(c => c == 2)) {
+        matchObj["$match"]["$or"].push(inWorkshopOrder)
+      }
+
+      if (colors?.some(c => c == 1)) {
+        matchObj["$match"]["$or"].push(
+          {
+            $nor: [inWorkshopOrder, agrupatedObj, finishedObj, separatedObj, forSeparateObj]
+          }
+        )
       }
 
       if (!matchObj["$match"]["$or"]?.length) delete matchObj["$match"]["$or"]
@@ -131,7 +184,6 @@ export class OrdersService {
     }
 
     const result = await this.orderModel.aggregate([
-      matchObj,
       {
         $lookup: {
           from: "cuts",
@@ -156,15 +208,13 @@ export class OrdersService {
       },
       {
         $lookup: {
-          from: "workshop-order",
-          localField: "cut",
+          from: "workshoporders",
+          localField: "cut._id",
           foreignField: "cut",
           as: "workshopOrder"
         }
       },
-      {
-        $unwind: { path: "$workshopOrder", preserveNullAndEmptyArrays: true },
-      },
+      matchObj,
       matchClient,
       {
         $sort: {
@@ -179,24 +229,25 @@ export class OrdersService {
         $limit: limit
       }
     ])
-
+    console.log(result[2])
     await Promise.all(result.map(async order => {
       const articles = await Promise.all(order?.articles?.map(async article => {
-        const art = article?.customArticle ? await this.customArticlesModel.findOne({_id: article?.customArticle}) : await this.articlesModel.findOne({_id: article?.article})
+        const art = article?.customArticle ? await this.customArticlesModel.findOne({ _id: article?.customArticle }) : await this.articlesModel.findOne({ _id: article?.article })
         const artObj = {}
         artObj[article?.customArticle ? "customArticle" : "article"] = art
-        return {...article, ...artObj}
+        return { ...article, ...artObj }
       }))
 
       const orderIndex = result.findIndex(o => o?._id == order?._id)
-      const client = await this.clientModel.findOne({_id: order?.client})
-      const workshop = await this.workshopOrdersModel.findOne({cut: order?.cut?._id})
+      const client = await this.clientModel.findOne({ _id: order?.client })
+      const workshop = await this.workshopOrdersModel.findOne({ cut: order?.cut?._id })
+      if (result[orderIndex].workshopOrder) delete result[orderIndex].workshopOrder
       result[orderIndex].workshop = workshop
       result[orderIndex].articles = articles
     }))
     return result
   }
-  
+
 
   async createOrder(order: CreateOrderDto): Promise<Order | undefined> {
     let { client, articles, ...rest } = order
@@ -323,7 +374,7 @@ export class OrdersService {
     const result = await this.orderModel.findOneAndUpdate(
       findObj,
       setObj,
-      {new: true}
+      { new: true }
     );
 
     if (!cut) {
@@ -346,69 +397,69 @@ export class OrdersService {
     const result = await this.orderModel.findOneAndUpdate(
       findObj,
       setObj,
-      {new: true}
+      { new: true }
     );
 
     return result;
   }
 
   async finishOrder(id: string): Promise<Order | undefined> {
-    return this.orderModel.findOneAndUpdate({_id: id}, {finished: true, finalDate: new Date()}, {new: true})
+    return this.orderModel.findOneAndUpdate({ _id: id }, { finished: true, finalDate: new Date() }, { new: true })
   }
 
   async updatePaidAmount(id: string, paid: string): Promise<Order | undefined> {
-    return this.orderModel.findOneAndUpdate({_id: id}, {paid: Number(paid)}, {new: true})
+    return this.orderModel.findOneAndUpdate({ _id: id }, { paid: Number(paid) }, { new: true })
   }
 
   async deleteOrder(id: string): Promise<any> {
     const cut = await this.cutsService.deleteCutByOrder(id)
-    if (cut) await this.workshopOrdersModel.deleteMany({cut: cut["_id"]})
-    return this.orderModel.deleteOne({_id: new Types.ObjectId(id)})
+    if (cut) await this.workshopOrdersModel.deleteMany({ cut: cut["_id"] })
+    return this.orderModel.deleteOne({ _id: new Types.ObjectId(id) })
   }
 
   async deleteArticle(oid: string, aid: string, custom: boolean): Promise<any> {
     const findObj = {}
     findObj[custom ? "customArticle" : "article"] = new Types.ObjectId(aid)
-    return this.orderModel.findOneAndUpdate({_id: new Types.ObjectId(oid)}, {$pull: {articles: findObj}}, {new: true})
+    return this.orderModel.findOneAndUpdate({ _id: new Types.ObjectId(oid) }, { $pull: { articles: findObj } }, { new: true })
   }
 
   async addArticle(oid: string, aid: string, custom: boolean): Promise<any> {
-    const findObj = {quantity: 0, booked: 0, common: custom ? false : true}
+    const findObj = { quantity: 0, booked: 0, common: custom ? false : true }
     findObj[custom ? "customArticle" : "article"] = new Types.ObjectId(aid)
-    return this.orderModel.findOneAndUpdate({_id: new Types.ObjectId(oid)}, {$push: {articles: findObj}}, {new: true})
+    return this.orderModel.findOneAndUpdate({ _id: new Types.ObjectId(oid) }, { $push: { articles: findObj } }, { new: true })
   }
 
   async deleteSuborder(oid: string, sid: string): Promise<any> {
-    return this.orderModel.findOneAndUpdate({_id: new Types.ObjectId(oid)}, {$pull: {suborders: new Types.ObjectId(sid)}}, {new: true})
+    return this.orderModel.findOneAndUpdate({ _id: new Types.ObjectId(oid) }, { $pull: { suborders: new Types.ObjectId(sid) } }, { new: true })
   }
 
   async addSuborder(oid: string, number: string, cattown: string): Promise<any> {
     const suborder = await this.getOrder(number, true)
     if (oid != suborder["_id"] && (cattown ? suborder?.society == "Cattown" : true)) {
-      return this.orderModel.findOneAndUpdate({_id: new Types.ObjectId(oid)}, {$addToSet: {suborders: suborder["_id"]}}, {new: true})
+      return this.orderModel.findOneAndUpdate({ _id: new Types.ObjectId(oid) }, { $addToSet: { suborders: suborder["_id"] } }, { new: true })
     }
   }
 
   async changeMode(id: string): Promise<Order | undefined> {
-    const order = await this.orderModel.findOne({_id: new Types.ObjectId(id)})
-    return this.orderModel.findOneAndUpdate({_id: new Types.ObjectId(id)}, {$set: {mode: !order?.mode}}, {new: true})
+    const order = await this.orderModel.findOne({ _id: new Types.ObjectId(id) })
+    return this.orderModel.findOneAndUpdate({ _id: new Types.ObjectId(id) }, { $set: { mode: !order?.mode } }, { new: true })
   }
 
   async updateOrder(id: string, property: string, value: string): Promise<Order | undefined> {
     const updateObj = {}
-    updateObj[property] = (value == "true" || value == "false" ) ? Boolean(value) : value
-    return this.orderModel.findOneAndUpdate({_id: new Types.ObjectId(id)}, {$set: updateObj}, {new: true})
+    updateObj[property] = (value == "true" || value == "false") ? Boolean(value) : value
+    return this.orderModel.findOneAndUpdate({ _id: new Types.ObjectId(id) }, { $set: updateObj }, { new: true })
   }
 
   async populateArticlesFromOrder(order): Promise<any> {
     const articles = []
     await Promise.all(order?.articles?.map(async article => {
       if (article?.article) {
-        const result = await this.articlesModel.findOne({_id: new Types.ObjectId(article?.article?._id)})
-        articles.push({...article, article: result})
+        const result = await this.articlesModel.findOne({ _id: new Types.ObjectId(article?.article?._id) })
+        articles.push({ ...article, article: result })
       } else {
-        const result = await this.customArticlesModel.findOne({_id: new Types.ObjectId(article?.customArticle?._id)})
-        articles.push({...article, customArticle: result})
+        const result = await this.customArticlesModel.findOne({ _id: new Types.ObjectId(article?.customArticle?._id) })
+        articles.push({ ...article, customArticle: result })
       }
     }))
     return articles
