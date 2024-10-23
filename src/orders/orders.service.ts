@@ -10,6 +10,7 @@ import { Article, ArticleDocument } from 'src/articles/schema/articles.schema';
 import { CustomArticle, CustomArticleDocument } from 'src/articles/schema/customArticle.schema';
 import { Client, ClientDocument } from 'src/clients/schema/clients.schema';
 import { WorkshopOrder, WorkshopOrderDocument } from 'src/workshop-order/schema/workshop-order.schema';
+import moment from 'moment';
 
 @Injectable()
 export class OrdersService {
@@ -229,7 +230,7 @@ export class OrdersService {
         $limit: limit
       }
     ])
-    console.log(result[2])
+
     await Promise.all(result.map(async order => {
       const articles = await Promise.all(order?.articles?.map(async article => {
         const art = article?.customArticle ? await this.customArticlesModel.findOne({ _id: article?.customArticle }) : await this.articlesModel.findOne({ _id: article?.article })
@@ -464,4 +465,20 @@ export class OrdersService {
     }))
     return articles
   }
+  
+  async getRecentOrders(days = 7): Promise<Order[] | undefined> {
+    const oneWeekAgo = moment().subtract(days, 'days').toDate()
+  
+    const recentOrders = await this.orderModel.find({
+      finalDate: { $gte: oneWeekAgo }
+    })
+
+    const resume = {}
+    resume["orders"] = recentOrders || []
+    resume["ordersLength"] = recentOrders?.length || 0
+    resume["profits"] = recentOrders?.reduce((acc, order) => acc+(order?.articles?.reduce((artAcc, art) => artAcc+((art?.price || 0) * (art?.quantity || 0)),0)), 0)
+  
+    return recentOrders;
+  }
+
 }

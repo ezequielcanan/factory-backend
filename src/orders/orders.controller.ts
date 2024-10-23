@@ -31,6 +31,11 @@ export class OrdersController {
     return this.ordersService.getOrders(society, page, search, finished, [colorOne, colorTwo, colorThree, colorFour, colorFive, colorSix]?.filter(c => c)?.map(c => parseInt(c)))
   }
 
+  @Get("/recent")
+  async getLastOrdersResume(@Query("days") days: string) {
+    return this.ordersService.getRecentOrders(days ? parseInt(days) : 7)
+  }
+
   @Get("/:id")
   async getOrder(@Param("id") id: string) {
     return this.ordersService.getOrderAndCut(id)
