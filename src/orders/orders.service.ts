@@ -10,7 +10,7 @@ import { Article, ArticleDocument } from 'src/articles/schema/articles.schema';
 import { CustomArticle, CustomArticleDocument } from 'src/articles/schema/customArticle.schema';
 import { Client, ClientDocument } from 'src/clients/schema/clients.schema';
 import { WorkshopOrder, WorkshopOrderDocument } from 'src/workshop-order/schema/workshop-order.schema';
-import moment from 'moment';
+import * as moment from 'moment';
 
 @Injectable()
 export class OrdersService {
@@ -405,7 +405,7 @@ export class OrdersService {
   }
 
   async finishOrder(id: string): Promise<Order | undefined> {
-    return this.orderModel.findOneAndUpdate({ _id: id }, { finished: true, finalDate: new Date() }, { new: true })
+    return this.orderModel.findOneAndUpdate({ _id: id }, { finished: true, finalDate: moment.utc().toDate() }, { new: true })
   }
 
   async updatePaidAmount(id: string, paid: string): Promise<Order | undefined> {
@@ -466,19 +466,27 @@ export class OrdersService {
     return articles
   }
   
-  async getRecentOrders(days = 7): Promise<Order[] | undefined> {
-    const oneWeekAgo = moment().subtract(days, 'days').toDate()
-  
+  async getRecentOrders(from, to): Promise<any> {
+    const dateString = "DD-MM-YYYY"
+    const fromDate = moment(from || moment().subtract(7, "days").format(dateString), dateString).toDate()
+    const toDate = to ? moment(to, dateString).subtract(-1, "days").toDate() : new Date()
+    
     const recentOrders = await this.orderModel.find({
-      finalDate: { $gte: oneWeekAgo }
+      finalDate: {$gte: fromDate, $lte: toDate}
     })
-
+    
     const resume = {}
     resume["orders"] = recentOrders || []
     resume["ordersLength"] = recentOrders?.length || 0
-    resume["profits"] = recentOrders?.reduce((acc, order) => acc+(order?.articles?.reduce((artAcc, art) => artAcc+((art?.price || 0) * (art?.quantity || 0)),0)), 0)
-  
-    return recentOrders;
+    resume["profits"] = recentOrders?.reduce((acc, order) => acc+(order?.articles?.reduce((artAcc, art) => artAcc+((art?.price || 0) * (art?.quantity || 0) * (order?.mode ? 1.21 : 1)),0)), 0)
+    
+    const articles = recentOrders.map((order) => order?.articles).flat()
+
+    resume["articles"] = articles.filter((article, index, self) =>
+      index === self.findIndex((t) => article?.article ? String(t?.article?._id) === String(article?.article?._id) : String(t?.customArticle?._id) === String(article?.customArticle?._id))
+    )
+
+    return resume;
   }
 
 }

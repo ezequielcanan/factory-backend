@@ -4,6 +4,7 @@ import { ConfigService } from '@nestjs/config';
 import { ArticlesService } from 'src/articles/articles.service';
 import { CreateOrderDto } from './dto/create-order.dto';
 import { CutsService } from 'src/cuts/cuts.service';
+import { from } from 'rxjs';
 
 @Controller('orders')
 export class OrdersController {
@@ -32,8 +33,8 @@ export class OrdersController {
   }
 
   @Get("/recent")
-  async getLastOrdersResume(@Query("days") days: string) {
-    return this.ordersService.getRecentOrders(days ? parseInt(days) : 7)
+  async getLastOrdersResume(@Query("from") from: string, @Query("to") to: string) {
+    return this.ordersService.getRecentOrders(from, to)
   }
 
   @Get("/:id")
