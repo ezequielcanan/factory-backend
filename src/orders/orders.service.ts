@@ -220,7 +220,7 @@ export class OrdersService {
       {
         $sort: {
           "finished": 1,
-          "orderNumber": -1
+          "deliveryDate": 1
         }
       },
       {
