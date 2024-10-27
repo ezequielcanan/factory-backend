@@ -55,6 +55,30 @@ Telofono fabrica y whatsapp administracion
 *** bordado o estampado ***
 *** corte cortado cambio de color ***
 *** arreglar cantidades cortes ***
-filtrar pedidos verdes
-pedidos por color
-home fecha facturacion
+*** filtrar pedidos verdes ***
+*** pedidos por color ***
+*** home fecha facturacion ***
+
+
+
+---------------------------------------------------------------------------------------------------------------------------------------
+
+
+*** cortes por fecha de entrega ***
+*** pasar a facturacion => bultos pedido (number) ***
+*** modificar fecha de entrega pedidos ***
+*** preguntar por articulos especiales corte ***
+
+
+
+*** remito ***
+logistica por semana => POSPONER TAREAS (SI/NO/POSPONER)
+aparece pedidos por fecha de entrega
+proveedores => igual que clientes
+presupuestos => tipo pedido (menos fecha de entrega y parciales) con historial de presupuestos
+compras => todo especial / con facturacion / unidades / cuenta 1 o 2 / sin foto, bordado, ubicacion ni detalle tecnico / con precio 
+Estados: PEDIDO (generar pdf) (ESTADO INICIAL) ------------ ENTREGADO o RETIRADO CAMBIA COLOR
+Galeria de insumos
+equivalencias articulos - insumos
+
+averiguar conexion con arca

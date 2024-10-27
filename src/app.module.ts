@@ -16,6 +16,7 @@ import { WorkshopsModule } from './workshops/workshops.module';
 import { WorkshopOrderModule } from './workshop-order/workshop-order.module';
 import { PdfModule } from './pdf/pdf.module';
 import { PaymentsModule } from './payments/payments.module';
+import { ActivitiesModule } from './activities/activities.module';
 
 @Module({
   imports: [
@@ -42,7 +43,8 @@ import { PaymentsModule } from './payments/payments.module';
     WorkshopsModule,
     WorkshopOrderModule,
     PdfModule,
-    PaymentsModule
+    PaymentsModule,
+    ActivitiesModule
   ],
   controllers: [AppController],
   providers: [AppService],

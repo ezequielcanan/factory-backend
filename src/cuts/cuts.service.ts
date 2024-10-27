@@ -152,6 +152,11 @@ export class CutsService {
         }
       },
       {
+        $sort: {
+          "order.deliveryDate": 1
+        }
+      },
+      {
         $project: {
           orderDetails: 0,
           filteredArticles: 0

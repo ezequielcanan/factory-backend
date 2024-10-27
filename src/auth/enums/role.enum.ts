@@ -7,4 +7,5 @@ export enum Role {
   Clients = "clients",
   Workshops = "workshops",
   Cattown = "cattown",
+  Logistics = "logistics",
 }

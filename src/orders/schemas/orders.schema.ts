@@ -39,6 +39,9 @@ export class Order {
   finalDate: Date
 
   @Prop()
+  packages: number
+
+  @Prop()
   mode: boolean
 
   @Prop({ type: [Types.ObjectId], ref: 'Order' })

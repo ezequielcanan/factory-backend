@@ -285,7 +285,7 @@ export class OrdersService {
     }
 
     const newArticles = order.articles?.map(article => {
-      if (article?.common && article?.quantity > article?.booked) {
+      if (article?.quantity > article?.booked) {
         article.hasToBeCut = true
       }
 

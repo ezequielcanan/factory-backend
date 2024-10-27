@@ -135,9 +135,13 @@ export class PdfController {
 
     doc.pipe(res)
     doc.fill("#000000").font(`${assetsPath}/fonts/Montserrat-SemiBold.ttf`).fontSize(6).text(order?.client["name"], percentageOfPageX(18.5), percentageOfPageY(12.89))
+    doc.text(order?.client["cuit"], percentageOfPageX(70), percentageOfPageY(12.89))
     doc.text(order?.client["address"], percentageOfPageX(18.5), percentageOfPageY(14.8))
-    doc.text(order?.client["expreso"], percentageOfPageX(18.5), percentageOfPageY(17.75))
-    doc.text(order?.client["expresoAddress"], percentageOfPageX(18.5), percentageOfPageY(19.35))
+    doc.text(order?.client["expreso"], percentageOfPageX(18.5), percentageOfPageY(18.85))
+    doc.text(order?.client["expresoAddress"], percentageOfPageX(18.5), percentageOfPageY(21))
+
+    const total = order?.articles?.reduce((acc, art) => acc + ((art?.price || 0) * (art?.quantity || 0)), 0) * 1.21
+    doc.text("$" + total.toFixed(2), percentageOfPageX(18.5), percentageOfPageY(51))
 
     doc.text(moment().format("DD"), percentageOfPageX(72), percentageOfPageY(5.9))
     doc.text(moment().format("MM"), percentageOfPageX(82), percentageOfPageY(5.9))
