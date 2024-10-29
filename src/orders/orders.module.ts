@@ -27,6 +27,7 @@ import { WorkshopOrder, WorkshopOrderSchema } from 'src/workshop-order/schema/wo
     ConfigModule
   ],
   controllers: [OrdersController],
-  providers: [OrdersService, ArticlesService, CutsService]
+  providers: [OrdersService, ArticlesService, CutsService],
+  exports: [OrdersService]
 })
 export class OrdersModule {}

@@ -1,4 +1,5 @@
-import { Prop, Schema } from "@nestjs/mongoose";
+import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
+import { HydratedDocument } from "mongoose";
 
 @Schema()
 export class Activity {
@@ -14,3 +15,7 @@ export class Activity {
   @Prop()
   finished: boolean
 }
+
+export const ActivitySchema = SchemaFactory.createForClass(Activity)
+
+export type ActivityDocument = HydratedDocument<Activity>

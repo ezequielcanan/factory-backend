@@ -23,7 +23,7 @@ import { User, UserSchema } from 'src/users/schema/users.schema';
     PassportModule,
     JwtModule.register({
       secret: "fabric",
-      signOptions: { expiresIn: '24h' },
+      signOptions: { expiresIn: '144h' },
     })],
   controllers: [AuthController],
   providers: [AuthService, UsersService, LocalStrategy, JwtStrategy]
