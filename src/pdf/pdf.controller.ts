@@ -235,7 +235,11 @@ export class PdfController {
 
       texts.forEach((text, iText) => {
         if (text?.notText) {
-          doc.image(text?.value, percentageOfPageX(firstXTable + (!iText ? 3 : 18 * iText)), yRow + percentageOfPageY(0.25), { fit: [percentageOfPageX(12), percentageOfPageY(6.5)], align: 'center', valign: 'center' });
+          try {
+            doc.image(text?.value, percentageOfPageX(firstXTable + (!iText ? 3 : 18 * iText)), yRow + percentageOfPageY(0.25), { fit: [percentageOfPageX(12), percentageOfPageY(6.5)], align: 'center', valign: 'center' });
+          } catch (e) {
+            console.log(e)
+          }
         } else {
           doc.fill("#000000").font(`${assetsPath}/fonts/Montserrat-SemiBold.ttf`).fontSize(iText != 2 ? 10 : 8)
 
