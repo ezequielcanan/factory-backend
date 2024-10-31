@@ -68,7 +68,7 @@ Telofono fabrica y whatsapp administracion
 *** pasar a facturacion => bultos pedido (number) ***
 *** modificar fecha de entrega pedidos ***
 *** preguntar por articulos especiales corte ***
-
+*** volver a pedidos desde facturacion ***
 
 
 *** remito ***

@@ -46,6 +46,9 @@ export class Order {
 
   @Prop({ type: [Types.ObjectId], ref: 'Order' })
   suborders: Types.ObjectId[]
+
+  @Prop()
+  delivered: boolean
 }
 
 export const OrderSchema = SchemaFactory.createForClass(Order)

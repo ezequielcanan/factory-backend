@@ -13,7 +13,7 @@ export class Activity {
   description: string
 
   @Prop()
-  finished: boolean
+  delivered: boolean
 }
 
 export const ActivitySchema = SchemaFactory.createForClass(Activity)
