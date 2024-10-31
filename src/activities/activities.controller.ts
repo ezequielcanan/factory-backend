@@ -1,6 +1,7 @@
 import { Body, Controller, Get, Post, Query } from '@nestjs/common';
 import { ActivitiesService } from './activities.service';
 import { CreateActivityDto } from './dto/create-activity.dto';
+import * as moment from 'moment';
 
 @Controller('activities')
 export class ActivitiesController {
@@ -15,6 +16,6 @@ export class ActivitiesController {
 
   @Get()
   async getActivities(@Query("to") to: string, @Query("from") from: string) {
-
+    return this.activitiesService.getActivities(moment.utc(to, "YYYY-MM-DD").toDate(), moment.utc(from, "YYYY-MM-DD").toDate())
   }
 }

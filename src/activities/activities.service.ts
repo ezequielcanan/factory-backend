@@ -17,7 +17,8 @@ export class ActivitiesService {
   }
 
   async getActivities(to, from): Promise<any> {
-    const orders = await this.ordersService.getRecentOrders(from, to)
+    const orders = await this.ordersService.getRecentOrders(from, to, "deliveryDate")
     const activities = await this.activityModel.find({date: {$gte: from, $lte: to}})
+    return {orders: orders["orders"], activities}
   }
 }
