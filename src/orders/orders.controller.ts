@@ -27,9 +27,9 @@ export class OrdersController {
     @Query("four") colorFour: string,
     @Query("five") colorFive: string,
     @Query("six") colorSix: string,
-
+    @Query("budgets") budgets: string
   ) {
-    return this.ordersService.getOrders(society, page, search, finished, [colorOne, colorTwo, colorThree, colorFour, colorFive, colorSix]?.filter(c => c)?.map(c => parseInt(c)))
+    return this.ordersService.getOrders(society, page, search, finished, budgets, [colorOne, colorTwo, colorThree, colorFour, colorFive, colorSix]?.filter(c => c)?.map(c => parseInt(c)))
   }
 
   @Get("/recent")

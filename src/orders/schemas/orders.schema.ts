@@ -48,6 +48,9 @@ export class Order {
   suborders: Types.ObjectId[]
 
   @Prop()
+  budget: boolean
+
+  @Prop()
   delivered: boolean
 }
 

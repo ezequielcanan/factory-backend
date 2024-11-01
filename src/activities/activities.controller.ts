@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Post, Put, Query } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Post, Put, Query } from '@nestjs/common';
 import { ActivitiesService } from './activities.service';
 import { CreateActivityDto } from './dto/create-activity.dto';
 import * as moment from 'moment';
@@ -22,5 +22,10 @@ export class ActivitiesController {
   @Get()
   async getActivities(@Query("to") to: string, @Query("from") from: string) {
     return this.activitiesService.getActivities(moment.utc(to, "YYYY-MM-DD").toDate(), moment.utc(from, "YYYY-MM-DD").toDate())
+  }
+
+  @Delete("/:id")
+  async deleteActivity(@Param("id") id: string) {
+    return this.activitiesService.deleteActivity(id)
   }
 }

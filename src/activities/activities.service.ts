@@ -37,4 +37,8 @@ export class ActivitiesService {
     }*/
     return this.activityModel.findOneAndUpdate({_id: new Types.ObjectId(id)}, {$set: newActivity}, {new: true})
   }
+
+  async deleteActivity(id: string): Promise<Activity | undefined> {
+    return this.activityModel.findOneAndDelete({_id: new Types.ObjectId(id)})
+  }
 }

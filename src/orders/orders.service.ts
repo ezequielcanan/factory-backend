@@ -68,10 +68,22 @@ export class OrdersService {
     return this.orderModel.find({ client: new Types.ObjectId(cid) })
   }
 
-  async getOrders(society: string, page: string, search: string, finished: string, colors: any): Promise<any | undefined> {
+  async getOrders(society: string, page: string, search: string, finished: string, budgets: string, colors: any): Promise<any | undefined> {
     const limit = 25
     const skip = (Number(page) - 1) * limit
     const matchClient = { $match: {} }
+
+    const matchBudgets = { $match: {} }
+    if (!budgets) {
+      matchBudgets["$match"]["$or"] = [
+        { budget: { $exists: false } },
+        { budget: { $eq: false } }
+      ]
+    } else {
+      matchBudgets["$match"]["$or"] = [
+        { budget: { $eq: true } }
+      ]
+    }
 
     const matchObj = { $match: {} }
     if (society) {
@@ -185,6 +197,7 @@ export class OrdersService {
     }
 
     const result = await this.orderModel.aggregate([
+      matchBudgets,
       {
         $lookup: {
           from: "cuts",
@@ -465,21 +478,21 @@ export class OrdersService {
     }))
     return articles
   }
-  
+
   async getRecentOrders(from, to, property = "finalDate"): Promise<any> {
     const dateString = "DD-MM-YYYY"
     const fromDate = moment(from || moment().subtract(7, "days").format(dateString), dateString).toDate()
     const toDate = to ? moment(to, dateString).subtract(-1, "days").toDate() : new Date()
-    
+
     const recentOrders = await this.orderModel.find({
-      [property]: {$gte: fromDate, $lte: toDate}
+      [property]: { $gte: fromDate, $lte: toDate }
     })
-    
+
     const resume = {}
     resume["orders"] = recentOrders || []
     resume["ordersLength"] = recentOrders?.length || 0
-    resume["profits"] = recentOrders?.reduce((acc, order) => acc+(order?.articles?.reduce((artAcc, art) => artAcc+((art?.price || 0) * (art?.quantity || 0) * (order?.mode ? 1.21 : 1)),0)), 0)
-    
+    resume["profits"] = recentOrders?.reduce((acc, order) => acc + (order?.articles?.reduce((artAcc, art) => artAcc + ((art?.price || 0) * (art?.quantity || 0) * (order?.mode ? 1.21 : 1)), 0)), 0)
+
     const articles = recentOrders.map((order) => order?.articles).flat()
 
     resume["articles"] = articles.filter((article, index, self) =>
