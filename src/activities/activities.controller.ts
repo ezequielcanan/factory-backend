@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Post, Query } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post, Put, Query } from '@nestjs/common';
 import { ActivitiesService } from './activities.service';
 import { CreateActivityDto } from './dto/create-activity.dto';
 import * as moment from 'moment';
@@ -12,6 +12,11 @@ export class ActivitiesController {
   @Post()
   async newActivity(@Body() activity: CreateActivityDto) {
     return this.activitiesService.createActivity(activity)
+  }
+
+  @Put("/:id")
+  async updateActivity(@Body() activity: CreateActivityDto, @Param("id") id: string) {
+    return this.activitiesService.updateActivity(id, activity)
   }
 
   @Get()
