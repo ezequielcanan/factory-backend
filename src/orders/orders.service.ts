@@ -364,9 +364,10 @@ export class OrdersService {
       const articleToUpdate = order?.articles?.find((a) => String(custom ? a.customArticle?._id : a.article?._id) == aid)
 
       if (((bookedArticles - (articleToUpdate?.booked) + parseInt(qty)) <= article?.stock && articleToUpdate.quantity >= parseInt(qty)) || !articleToUpdate?.common) {
-        const result = await this.orderModel.updateOne(
+        const result = await this.orderModel.findOneAndUpdate(
           findObj,
-          setObj
+          setObj,
+          {new: true}
         );
         return result;
       }
