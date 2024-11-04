@@ -1,4 +1,5 @@
 export enum Society {
   Cattown = "Cattown",
-  Arcan = "Arcan"
+  Arcan = "Arcan",
+  CattownHome = "Cattown Home",
 }

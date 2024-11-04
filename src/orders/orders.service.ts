@@ -25,7 +25,25 @@ export class OrdersService {
 
   async getBookedQuantity(articleId: string | Types.ObjectId): Promise<number> {
     const result = await this.orderModel.aggregate([
-      { $match: { finished: false, "articles.article": new Types.ObjectId(articleId) } },
+      {
+        $match: {
+          $and: [
+            {
+              $or: [
+                { finished: { $exists: false } },
+                { finished: { $eq: false } }
+              ]
+            },
+            {
+              $or: [
+                { budget: { $exists: false } },
+                { budget: { $eq: false } }
+              ]
+            }
+          ],
+          "articles.article": new Types.ObjectId(articleId)
+        }
+      },
       { $unwind: "$articles" },
       { $match: { "articles.article": new Types.ObjectId(articleId) } },
       { $group: { _id: null, totalBooked: { $sum: "$articles.booked" } } }
@@ -46,7 +64,7 @@ export class OrdersService {
     return order
   }
 
-  async getOrder(id: string, number: boolean = false): Promise<Order | undefined> {
+  async getOrder(id: string, number: boolean = false): Promise<any> {
     const findObj = {}
 
     if (!number) {
@@ -55,7 +73,18 @@ export class OrdersService {
       findObj["orderNumber"] = id
     }
 
-    return this.orderModel.findOne(findObj).populate("client").populate("articles.article").populate("articles.customArticle")
+    const order = await this.orderModel.findOne(findObj).populate("client").populate("articles.article").populate("articles.customArticle").lean()
+
+    await Promise.all(order?.articles?.filter(a => a?.article || a?.common)?.map(async article => {
+      const totalBooked = await this.getBookedQuantity(article?.article?._id)
+      const artIndex = order?.articles?.findIndex(a => String(a?.article?._id) == String(article?.article?._id))
+      const newArticle = order?.articles[artIndex] as any
+      newArticle.totalBooked = totalBooked
+      order.articles[artIndex] = newArticle
+    }))
+
+
+    return order
   }
 
   async getOrderAndCut(id: string, number: boolean = false): Promise<any> {
@@ -302,6 +331,8 @@ export class OrdersService {
         article.hasToBeCut = true
       }
 
+      article[article?.article ? "article" : "customArticle"] = new Types.ObjectId(article?.article ? article?.article?._id : article?.customArticle?._id)
+
       return article
     })
 
@@ -359,16 +390,17 @@ export class OrdersService {
       }
 
       const order = await this.getOrder(oid)
+      console.log(aid)
       const bookedArticles = await this.getBookedQuantity(aid)
       const article = await this.articlesModel.findOne({ _id: aid })
       const articleToUpdate = order?.articles?.find((a) => String(custom ? a.customArticle?._id : a.article?._id) == aid)
-
+      console.log(bookedArticles, articleToUpdate?.booked)
       if (((bookedArticles - (articleToUpdate?.booked) + parseInt(qty)) <= article?.stock && articleToUpdate.quantity >= parseInt(qty)) || !articleToUpdate?.common) {
         const result = await this.orderModel.findOneAndUpdate(
           findObj,
           setObj,
-          {new: true}
-        );
+          { new: true }
+        ).populate("client").populate("articles.article").populate("articles.customArticle").lean()
         return result;
       }
     }
