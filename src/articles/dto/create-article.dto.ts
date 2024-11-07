@@ -18,4 +18,6 @@ export class CreateArticleDto {
   size: string
 
   cateogry: string
+
+  material: boolean
 }

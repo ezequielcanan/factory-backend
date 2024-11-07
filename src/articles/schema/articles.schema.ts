@@ -24,6 +24,9 @@ export class Article {
 
     @Prop()
     price: number
+
+    @Prop({default: false, type: Boolean})
+    material: boolean
 }
 
 export const ArticleSchema = SchemaFactory.createForClass(Article)

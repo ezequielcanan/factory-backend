@@ -76,7 +76,7 @@ logistica por semana => POSPONER TAREAS (SI/NO/POSPONER)
 aparece pedidos por fecha de entrega
 proveedores => igual que clientes
 presupuestos => tipo pedido (menos fecha de entrega y parciales) con historial de presupuestos
-compras => todo especial / con facturacion / unidades / cuenta 1 o 2 / sin foto, bordado, ubicacion ni detalle tecnico / con precio 
+compras => todo especial / con facturacion / unidades (cm2, kg, mt2, etc) / cuenta 1 o 2 / sin foto, bordado, ubicacion ni detalle tecnico / con precio 
 Estados: PEDIDO (generar pdf) (ESTADO INICIAL) ------------ ENTREGADO o RETIRADO CAMBIA COLOR
 Galeria de insumos
 equivalencias articulos - insumos
