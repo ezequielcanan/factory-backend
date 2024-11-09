@@ -98,7 +98,7 @@ export class OrdersService {
   }
 
   async getOrders(society: string, page: string, search: string, finished: string, budgets: string, colors: any): Promise<any | undefined> {
-    const limit = 25
+    const limit = 50
     const skip = (Number(page) - 1) * limit
     const matchClient = { $match: {} }
 
@@ -260,9 +260,15 @@ export class OrdersService {
       matchObj,
       matchClient,
       {
+        $addFields: {
+          priority: { $ifNull: ["$priority", 0] } // Asigna 0 si priority es null o undefined
+        }
+      },
+      {
         $sort: {
+          "priority": -1,
           "finished": 1,
-          "deliveryDate": 1
+          "deliveryDate": 1,
         }
       },
       {

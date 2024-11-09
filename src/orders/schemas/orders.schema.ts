@@ -52,6 +52,9 @@ export class Order {
 
   @Prop()
   delivered: boolean
+
+  @Prop()
+  priority: number
 }
 
 export const OrderSchema = SchemaFactory.createForClass(Order)

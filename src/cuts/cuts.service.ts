@@ -152,7 +152,13 @@ export class CutsService {
         }
       },
       {
+        $addFields: {
+          priority: { $ifNull: ["$priority", 0] } // Asigna 0 si priority es null o undefined
+        }
+      },
+      {
         $sort: {
+          "priority": -1,
           "order.deliveryDate": 1
         }
       },
@@ -178,7 +184,7 @@ export class CutsService {
       const cutArticles = (c?.order ? c?.order?.articles : c?.manualItems)?.map(art => String(art?.article ? art?.article?._id : art?.customArticle?._id))
       
       let notInWorkshopAnArticle = false
-      cutArticles.forEach(a => {
+      cutArticles?.forEach(a => {
         if (!articlesInWorkshops.includes(a)) {
           notInWorkshopAnArticle = true
         }
@@ -201,7 +207,7 @@ export class CutsService {
       const cutArticles = (c?.order ? c?.order?.articles : c?.manualItems)?.map(art => String(art?.article ? art?.article?._id : art?.customArticle?._id))
       const allBooked = c?.order ? c?.order?.articles?.every(art => art?.quantity == art?.booked) : false
       let notInWorkshopAnArticle = false
-      cutArticles.forEach(a => {
+      cutArticles?.forEach(a => {
         if (!articlesInWorkshops.includes(a)) {
           notInWorkshopAnArticle = true
         }

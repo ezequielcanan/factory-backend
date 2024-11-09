@@ -23,7 +23,7 @@ export class WorkshopOrderService {
   }
 
   async getWorkshopOrders(): Promise<WorkshopOrder[] | undefined> {
-    return this.workshopOrderModel.find()
+    return this.workshopOrderModel.find().sort({"priority": -1})
   }
 
   async getWorkshopOrder(id: string): Promise<WorkshopOrder | undefined> {

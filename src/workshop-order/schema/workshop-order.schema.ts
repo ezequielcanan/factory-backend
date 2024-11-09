@@ -6,6 +6,9 @@ import { Workshop } from "src/workshops/schema/workshops.schema";
 
 @Schema()
 export class WorkshopOrder {
+  @Prop()
+  priority: number
+  
   @Prop({type: Types.ObjectId, ref: Workshop.name})
   workshop: Types.ObjectId
 
