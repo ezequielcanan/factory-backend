@@ -175,9 +175,17 @@ export class CutsService {
     return finalCuts
   }
 
-  async getCuts(): Promise<Cut[] | undefined> {
+  passByFiltersCut(cut, one, two, three) {
+    if (!one && !two && !three) return true
+    if (one && !cut?.cut && !cut?.workshopOrders?.length) return true
+    if (two && cut?.cut && !cut?.workshopOrders?.length) return true
+    if (three && cut?.cut && cut?.workshopOrders?.length) return true
+  }
+
+  async getCuts(one: string = "", two: string = "", three: string = ""): Promise<Cut[] | undefined> {
     const finalCuts = await this.getCutsAgreggation()
     return finalCuts.filter(c => {
+      if (!this.passByFiltersCut(c, one, two, three)) return false 
       const articlesInWorkshops = c?.workshopOrders?.map(order => {
         return order?.articles?.map(art => String(art?.article ? art?.article?._id : art?.customArticle?._id))
       }).flat()

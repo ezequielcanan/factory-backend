@@ -9,8 +9,8 @@ export class CutsController {
   ) {}
 
   @Get()
-  async getCuts() {
-    return this.cutsService.getCuts()
+  async getCuts(@Query("one") one: string, @Query("two") two: string, @Query("three") three: string,) {
+    return this.cutsService.getCuts(one, two, three)
   }
 
   @Get("/finished")
