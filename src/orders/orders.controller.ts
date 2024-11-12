@@ -33,8 +33,8 @@ export class OrdersController {
   }
 
   @Get("/recent")
-  async getLastOrdersResume(@Query("from") from: string, @Query("to") to: string) {
-    return this.ordersService.getRecentOrders(from, to)
+  async getLastOrdersResume(@Query("from") from: string, @Query("to") to: string, @Query("society") society: string) {
+    return this.ordersService.getRecentOrders(from, to, society)
   }
 
   @Get("/:id")

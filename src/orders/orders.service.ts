@@ -518,13 +518,14 @@ export class OrdersService {
     return articles
   }
 
-  async getRecentOrders(from, to, property = "finalDate"): Promise<any> {
+  async getRecentOrders(from, to, society, property = "finalDate"): Promise<any> {
     const dateString = "DD-MM-YYYY"
     const fromDate = moment(from || moment().subtract(7, "days").format(dateString), dateString).toDate()
     const toDate = to ? moment(to, dateString).subtract(-1, "days").toDate() : new Date()
 
     const recentOrders = await this.orderModel.find({
-      [property]: { $gte: fromDate, $lte: toDate }
+      [property]: { $gte: fromDate, $lte: toDate },
+      society
     })
 
     const resume = {}
