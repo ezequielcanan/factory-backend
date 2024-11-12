@@ -148,7 +148,7 @@ export class PdfService {
     const padding = 1.2
     order?.articles?.forEach((article, i) => {
       doc.text(article?.quantity, percentageOfPageX(11), percentageOfPageY(29.5 + padding * i))
-      doc.text(article?.article ? article?.article["description"] : article?.customArticle["detail"], percentageOfPageX(28.5), percentageOfPageY(29.5 + padding * i))
+      doc.text(article?.article ? article?.article["description"] + " - " + (article?.article["size"] || "") : article?.customArticle["detail"] + " - " + (article?.customArticle["size"] || ""), percentageOfPageX(28.5), percentageOfPageY(29.5 + padding * i))
     })
 
     return doc
@@ -274,7 +274,7 @@ export class PdfService {
         console.log(e)
       }
 
-      const descriptionText = article?.article ? article?.article["description"] : article?.customArticle["detail"]
+      const descriptionText = article?.article ? article?.article["description"] + " - " + (article?.article["size"] || "") : article?.customArticle["detail"] + " - " + (article?.customArticle["size"] || "")
 
       const textHeight = doc.heightOfString(descriptionText, { width: containerWidth });
       const textWidth = doc.fill("#000000").font(`${assetsPath}/fonts/Montserrat-SemiBold.ttf`).fontSize(10).widthOfString(descriptionText) || 0
@@ -378,7 +378,7 @@ export class PdfService {
       const texts = [
         { value: article?.quantity },
         { notText: true, value: `./uploads/articles/${article?.customArticle ? "custom/" : ""}${article?.article?._id || article?.customArticle?._id}/thumbnail.png` },
-        { value: article?.article ? article?.article["description"] : article?.customArticle["detail"] },
+        { value: article?.article ? article?.article["description"] + " - " + (article?.article["size"] || ""): article?.customArticle["detail"] + " - " + (article?.customArticle["size"] || "") },
         { value: article?.price || 0 },
         { value: (article?.price || 0) * (article?.quantity || 0) }
       ];
