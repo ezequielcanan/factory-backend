@@ -257,7 +257,7 @@ export class PdfService {
       texts.forEach((text, iText) => {
         const textHeight = doc.heightOfString(text?.value, { width: containerWidth });
         const textWidth = doc.fill("#000000").font(`${assetsPath}/fonts/Montserrat-SemiBold.ttf`).fontSize(10).widthOfString(text?.value) || 0
-
+        
         const yPosition = yRow + (percentageOfPageY(rowHeight) - textHeight) / 2
 
         const xStartPosition = xTable + containerWidth * text?.position + (containerWidth - textWidth) / 2
@@ -277,11 +277,12 @@ export class PdfService {
       const descriptionText = article?.article ? article?.article["description"] + " - " + (article?.article["size"] || "") : article?.customArticle["detail"] + " - " + (article?.customArticle["size"] || "")
 
       const textHeight = doc.heightOfString(descriptionText, { width: containerWidth });
-      const textWidth = doc.fill("#000000").font(`${assetsPath}/fonts/Montserrat-SemiBold.ttf`).fontSize(10).widthOfString(descriptionText) || 0
+      const textWidth = doc.fill("#000000").font(`${assetsPath}/fonts/Montserrat-SemiBold.ttf`).fontSize(8).widthOfString(descriptionText) || 0
+      console.log(textWidth, containerWidth)
 
-      const yPosition = yRow + ((percentageOfPageY(8)) - textHeight) / 2
+      const yPosition = yRow + percentageOfPageY(2)
 
-      xStartPosition = xTable + containerWidth * 1 + (containerWidth - textWidth) / 2
+      xStartPosition = textWidth < containerWidth ? (xTable + containerWidth * 1 + (containerWidth - textWidth) / 2) : xTable + containerWidth
 
       doc.text(descriptionText, xStartPosition, yPosition, { width: containerWidth, ellipsis: true });
 
