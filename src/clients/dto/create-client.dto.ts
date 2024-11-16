@@ -18,4 +18,6 @@ export class CreateClientDto {
   expreso: string
 
   expresoAddress: string
+
+  supplier: boolean
 }

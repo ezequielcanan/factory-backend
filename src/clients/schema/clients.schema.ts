@@ -29,6 +29,9 @@ export class Client {
 
   @Prop()
   expresoAddress: string
+
+  @Prop()
+  supplier: boolean
 }
 
 export const ClientSchema = SchemaFactory.createForClass(Client)

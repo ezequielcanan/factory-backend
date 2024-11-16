@@ -11,9 +11,11 @@ export class CreateArticleDto {
   @IsNumber()
   price: number
   
+  @IsOptional()
   @MinLength(1)
   color: string
 
+  @IsOptional()
   @MinLength(1)
   size: string
 

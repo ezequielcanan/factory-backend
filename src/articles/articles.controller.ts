@@ -27,8 +27,8 @@ export class ArticlesController {
   }
 
   @Get()
-  async getArticles(@Query("page") page: string, @Query("color") color: string, @Query("size") size: string, @Query("category") category: string, @Query("society") society: string, @Query("search") search: string) {
-    return this.articlesService.getArticles(page, color, size, category, society, search)
+  async getArticles(@Query("page") page: string, @Query("color") color: string, @Query("size") size: string, @Query("category") category: string, @Query("society") society: string, @Query("search") search: string, @Query("materials") materials: string) {
+    return this.articlesService.getArticles(page, color, size, category, society, search, materials ? true : false)
   }
 
   @Get("/:id")

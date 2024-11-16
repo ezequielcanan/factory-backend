@@ -16,9 +16,19 @@ export class ClientsService {
     return this.clientModel.create(client)
   }
 
-  async getClients(sort: boolean, page: string): Promise<Client[]> {
+  async getClients(sort: boolean, page: string, suppliers = false): Promise<Client[]> {
+    const findObj = {}
+    if (!suppliers) {
+      findObj["$or"] = [
+        { supplier: { $exists: false } },
+        { supplier: { $eq: false } }
+      ]
+    } else {
+      findObj["supplier"] = true
+    }
     if (!sort) {
       return this.clientModel.aggregate([
+        {$match: findObj},
         {
           $project: {
             name: { $toLower: "$name" },

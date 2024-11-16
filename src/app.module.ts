@@ -17,6 +17,7 @@ import { WorkshopOrderModule } from './workshop-order/workshop-order.module';
 import { PdfModule } from './pdf/pdf.module';
 import { PaymentsModule } from './payments/payments.module';
 import { ActivitiesModule } from './activities/activities.module';
+import { BuyOrdersModule } from './buy-orders/buy-orders.module';
 
 @Module({
   imports: [
@@ -44,7 +45,8 @@ import { ActivitiesModule } from './activities/activities.module';
     WorkshopOrderModule,
     PdfModule,
     PaymentsModule,
-    ActivitiesModule
+    ActivitiesModule,
+    BuyOrdersModule
   ],
   controllers: [AppController],
   providers: [AppService],

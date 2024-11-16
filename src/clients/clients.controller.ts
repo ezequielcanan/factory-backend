@@ -15,8 +15,8 @@ export class ClientsController {
   }
 
   @Get()
-  async getClients(@Query("sort") sort: string, @Query("page") page: string) {
-    return this.clientsService.getClients(sort ? true : false, page)
+  async getClients(@Query("sort") sort: string, @Query("page") page: string, @Query("suppliers") suppliers: string) {
+    return this.clientsService.getClients(sort ? true : false, page, suppliers ? true : false)
   }
   
   @Get("/:id")
