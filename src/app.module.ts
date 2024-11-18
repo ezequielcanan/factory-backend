@@ -52,5 +52,3 @@ import { BuyOrdersModule } from './buy-orders/buy-orders.module';
   providers: [AppService],
 })
 export class AppModule {}
-
-console.log("anashe")
