@@ -11,10 +11,10 @@ export class BuyOrdersService {
   ) {}
 
   async createBuyOrder(buyOrder: CreateBuyOrderDto): Promise<BuyOrder> {
-    let { client, items, ...rest } = buyOrder
+    let { client, articles, ...rest } = buyOrder
 
     const lastOrder = await this.buyOrderModel.find().sort({ orderNumber: "desc" }).limit(1)
-    const newArticles = items.map(a => {
+    const newArticles = articles.map(a => {
       const returnItem = {
         ...a
       }
@@ -29,7 +29,7 @@ export class BuyOrdersService {
 
       return returnItem
     })
-    return this.buyOrderModel.create({ orderNumber: lastOrder.length ? lastOrder[0]?.orderNumber + 1 : 0, client: new Types.ObjectId(client), items: newArticles, ...rest })
+    return this.buyOrderModel.create({ orderNumber: lastOrder.length ? lastOrder[0]?.orderNumber + 1 : 0, client: new Types.ObjectId(client), articles: newArticles, ...rest })
   }
 
 }

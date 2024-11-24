@@ -9,5 +9,7 @@ export enum Role {
   Cattown = "cattown",
   Logistics = "logistics",
   Budgets = "budgets",
-  Materials = "materials"
+  Materials = "materials",
+  Buys = "buys",
+  Suppliers = "suppliers"
 }

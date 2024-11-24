@@ -22,4 +22,6 @@ export class CreateArticleDto {
   cateogry: string
 
   material: boolean
+
+  measurement: string
 }

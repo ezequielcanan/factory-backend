@@ -9,7 +9,7 @@ export class BuyOrder {
   orderNumber: number
 
   @Prop({type: [BuyItem]})
-  items: BuyItem[]
+  articles: BuyItem[]
 
   @Prop({type: Types.ObjectId, ref: Client.name})
   client: Types.ObjectId

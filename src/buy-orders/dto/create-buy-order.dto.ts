@@ -24,7 +24,7 @@ export class CreateBuyOrderDto {
   @IsArray()
   @ValidateNested({ each: true })
   @Type(() => BuyItemDto)
-  items: BuyItemDto[];
+  articles: BuyItemDto[];
 
   @IsOptional()
   @IsString()

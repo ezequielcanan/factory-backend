@@ -27,6 +27,9 @@ export class Article {
 
     @Prop({default: false, type: Boolean})
     material: boolean
+
+    @Prop()
+    measurement: string
 }
 
 export const ArticleSchema = SchemaFactory.createForClass(Article)
