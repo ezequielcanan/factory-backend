@@ -13,6 +13,11 @@ export class BuyItemDto {
   @IsString()
   article: Types.ObjectId
 
+  @IsOptional()
+  @IsNumber()
+  price: number
+
+  @IsOptional()
   @IsArray()
   received: [{
     date: Date,
@@ -33,4 +38,6 @@ export class CreateBuyOrderDto {
   @IsNotEmpty()
   @IsString()
   client: string
+
+  date: Date
 }

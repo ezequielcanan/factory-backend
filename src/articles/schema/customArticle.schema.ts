@@ -10,6 +10,9 @@ export class CustomArticle {
   details: string
   
   @Prop()
+  measurement: string
+
+  @Prop()
   size: string
   
   @Prop()

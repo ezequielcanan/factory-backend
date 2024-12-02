@@ -20,6 +20,8 @@ export class CreateCustomArticleDto {
   @IsString()
   bordado: string
 
+  @IsOptional()
+  measurement: string
   
   @IsOptional()
   @IsString()

@@ -14,6 +14,9 @@ export class BuyItem {
   @Prop({ type: Types.ObjectId, ref: Article.name })
   article: Types.ObjectId
 
+  @Prop()
+  price: number
+
   @Prop({type: Array})
   received: [{
     date: Date,

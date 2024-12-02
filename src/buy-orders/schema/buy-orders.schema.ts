@@ -19,7 +19,11 @@ export class BuyOrder {
 
   @Prop()
   mode: boolean
+
+  @Prop()
+  date: Date
 }
 
 export const BuyOrderSchema = SchemaFactory.createForClass(BuyOrder)
+
 export type BuyOrderDocument = HydratedDocument<BuyOrder>
