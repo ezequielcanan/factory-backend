@@ -15,8 +15,8 @@ export class PdfController {
   }
 
   @Get('/2/:oid')
-  async generatePdf(@Param("oid") oid: string, @Res() res: Response) {
-    const doc = await this.pdfService.generateOrderPdf(oid, res)
+  async generatePdf(@Param("oid") oid: string, @Res() res: Response, @Query("buy") buy: string) {
+    const doc = await this.pdfService.generateOrderPdf(oid, res, buy)
     doc.end()
   }
 

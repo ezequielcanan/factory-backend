@@ -9,6 +9,7 @@ import * as PDFDocument from 'pdfkit';
 import * as moment from 'moment'
 import { Order } from 'src/orders/schemas/orders.schema';
 import { Response } from 'express';
+import { BuyOrdersService } from 'src/buy-orders/buy-orders.service';
 
 const fontHeadStyle = {
   font: {
@@ -112,6 +113,7 @@ export class PdfService {
   constructor(
     private readonly clientsService: ClientsService,
     private readonly ordersService: OrdersService,
+    private readonly buyOrdersService: BuyOrdersService,
     private readonly paymentsService: PaymentsService,
     private readonly articlesService: ArticlesService
   ) { }
@@ -156,7 +158,9 @@ export class PdfService {
 
   async generateHeader(color: string, isArcan: boolean, doc: PDFDocument, society, text = false) {
     doc.save().moveTo(0, 0).lineTo(0, percentageOfPageY(60)).lineTo(percentageOfPageX(40), 0).fill(color);
-    doc.image(`${assetsPath}/${society?.toLowerCase()}.png`, 20, 0, { fit: [150, 150], align: 'center', valign: 'center' })
+    try {
+      doc.image(`${assetsPath}/${society?.toLowerCase()}.png`, 20, 0, { fit: [150, 150], align: 'center', valign: 'center' })
+    } catch (e) {console.log(e)}
 
     if (text) doc.fill("#FFFFFF").font(`${assetsPath}/fonts/Montserrat-Bold.ttf`).fontSize(14).text("COTIZACION", 46, 120);
   }
@@ -274,7 +278,7 @@ export class PdfService {
         console.log(e)
       }
 
-      const descriptionText = article?.article ? article?.article["description"] + " - " + (article?.article["size"] || "") : article?.customArticle["detail"] + " - " + (article?.customArticle["size"] || "")
+      const descriptionText = article?.article ? article?.article["description"] + (article?.article["size"] ? " - " + article?.article["size"] : "") : article?.customArticle["detail"] + (article?.customArticle["size"] ? " - " + article?.customArticle["size"] : "")
 
       const textHeight = doc.heightOfString(descriptionText, { width: containerWidth });
       const textWidth = doc.fill("#000000").font(`${assetsPath}/fonts/Montserrat-SemiBold.ttf`).fontSize(8).widthOfString(descriptionText) || 0
@@ -319,8 +323,8 @@ export class PdfService {
     return doc
   }
 
-  async generateOrderPdf(oid: string, res: Response): Promise<any> {
-    const order = await this.ordersService.getOrder(oid);
+  async generateOrderPdf(oid: string, res: Response, buy: string): Promise<any> {
+    const order = !buy ? await this.ordersService.getOrder(oid) : await this.buyOrdersService.getOrder(oid)
     const doc = new PDFDocument({ size: "A4", margin: 50 });
     const isArcan = order?.society == "Arcan"
 
@@ -379,7 +383,7 @@ export class PdfService {
       const texts = [
         { value: article?.quantity },
         { notText: true, value: `./uploads/articles/${article?.customArticle ? "custom/" : ""}${article?.article?._id || article?.customArticle?._id}/thumbnail.png` },
-        { value: article?.article ? article?.article["description"] + " - " + (article?.article["size"] || ""): article?.customArticle["detail"] + " - " + (article?.customArticle["size"] || "") },
+        { value:  article?.article ? article?.article["description"] + (article?.article["size"] ? " - " + article?.article["size"] : "") : article?.customArticle["detail"] + (article?.customArticle["size"] ? " - " + article?.customArticle["size"] : "") },
         { value: article?.price || 0 },
         { value: (article?.price || 0) * (article?.quantity || 0) }
       ];

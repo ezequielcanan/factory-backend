@@ -128,4 +128,44 @@ export class BuyOrdersService {
     return result;
   }
 
+  async updateArticleQuantity(oid: string, aid: string, qty: string, custom: string): Promise<any> {
+    if (parseInt(qty) >= 0) {
+      const findObj = this.getFindObjForArticle(oid, aid, custom)
+      const setObj = {
+        $set: {
+          "articles.$.quantity": parseInt(qty)
+        }
+      }
+      const order = await this.getOrder(oid)
+      setObj["$set"]["articles.$.booked"] = qty
+      const result = await this.buyOrderModel.updateOne(
+        findObj,
+        setObj
+      );
+
+      return result;
+    }
+  }
+
+  async deleteArticle(oid: string, aid: string, custom: boolean): Promise<any> {
+    const findObj = {}
+    findObj[custom ? "customArticle" : "article"] = new Types.ObjectId(aid)
+    return this.buyOrderModel.findOneAndUpdate({ _id: new Types.ObjectId(oid) }, { $pull: { articles: findObj } }, { new: true })
+  }
+
+  async addArticle(oid: string, aid: string, custom: boolean): Promise<any> {
+    const findObj = { quantity: 0, booked: 0, common: custom ? false : true }
+    findObj[custom ? "customArticle" : "article"] = new Types.ObjectId(aid)
+    return this.buyOrderModel.findOneAndUpdate({ _id: new Types.ObjectId(oid) }, { $push: { articles: findObj } }, { new: true })
+  }
+
+  async deleteOrder(id: string): Promise<any> {
+    return this.buyOrderModel.deleteOne({ _id: new Types.ObjectId(id) })
+  }
+
+  async updateOrder(id: string, property: string, value: string): Promise<BuyOrder | undefined> {
+    const updateObj = {}
+    updateObj[property] = (value == "true" || value == "false") ? ((value == "true") ? true : false) : value
+    return this.buyOrderModel.findOneAndUpdate({ _id: new Types.ObjectId(id) }, { $set: updateObj }, { new: true })
+  }
 }
