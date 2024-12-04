@@ -20,4 +20,6 @@ export class CreateClientDto {
   expresoAddress: string
 
   supplier: boolean
+
+  paymentsInfo: string
 }

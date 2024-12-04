@@ -484,27 +484,30 @@ export class PdfService {
       })
     }
 
-    ws.cell(1, 1, 1, 4, true).string(`Cuenta corriente ${client?.name}`).style(styles["sectionHead"])
+    ws.cell(1, 1, 1, 5, true).string(`Cuenta corriente ${client?.name}`).style(styles["sectionHead"])
     const dateCol = 1
     const motivoCol = 2
-    const amountCol = 3
-    const totalCol = 4
+    const billCol = 3
+    const amountCol = 4
+    const totalCol = 5
 
     ws.cell(2, dateCol).string(`FECHA`).style(styles["importantCell"])
     ws.cell(2, motivoCol).string(`MOTIVO`).style(styles["importantCell"])
+    ws.cell(2, billCol).string(`FACTURA`).style(styles["importantCell"])
     ws.cell(2, amountCol).string(`MONTO`).style(styles["importantCell"])
     ws.cell(2, totalCol).string(`TOTAL`).style(styles["importantCell"])
 
     let items = []
 
     orders.forEach((order, i) => {
-      items.push({ date: moment(order?.finalDate, "DD-MM-YYYY"), text: `Pedido N° ${order?.orderNumber}`, amount: order?.articles?.reduce((acc, art) => acc + ((art?.quantity || 0) * (art?.price || 0) * (order?.mode ? 1.21 : 1)), 0) })
+      items.push({ date: moment(order?.finalDate, "DD-MM-YYYY"), text: `Pedido N° ${order?.orderNumber}`, bill: order?.billNumber, amount: order?.articles?.reduce((acc, art) => acc + ((art?.quantity || 0) * (art?.price || 0) * (order?.mode ? 1.21 : 1)), 0) })
     })
 
     payments.forEach((payment) => {
       items.push({
         date: moment(payment?.date),
         text: payment?.detail,
+        bill: "",
         amount: payment?.amount,
         payment: true
       })
@@ -524,6 +527,7 @@ export class PdfService {
       const row = 3 + i
       ws.cell(row, dateCol).string(moment.utc(item?.date).format("DD-MM-YYYY")).style(finalStyle)
       ws.cell(row, motivoCol).string(item?.text).style(finalStyle)
+      ws.cell(row, billCol).string(item?.bill).style(finalStyle)
       ws.cell(row, amountCol).number(item?.payment ? -item?.amount : item?.amount).style(finalStyle)
       ws.cell(row, totalCol).formula(`+${i ? xl.getExcelCellRef(row - 1, totalCol) : "0"} + ${xl.getExcelCellRef(row, amountCol)}`).style(finalStyle)
     })

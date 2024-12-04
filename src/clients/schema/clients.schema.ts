@@ -32,6 +32,9 @@ export class Client {
 
   @Prop()
   supplier: boolean
+
+  @Prop()
+  paymentsInfo: string
 }
 
 export const ClientSchema = SchemaFactory.createForClass(Client)

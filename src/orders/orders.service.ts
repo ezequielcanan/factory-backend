@@ -257,8 +257,55 @@ export class OrdersService {
           as: "workshopOrder"
         }
       },
+      {
+        $lookup: {
+          from: "articles",
+          localField: "articles.article",
+          foreignField: "_id",
+          as: "articleDetails"
+        }
+      },
+      {
+        $lookup: {
+          from: "customarticles",
+          localField: "articles.customArticle",
+          foreignField: "_id",
+          as: "customArticleDetails"
+        }
+      },
+      {
+        $addFields: {
+          articlesString: {
+            $reduce: {
+              input: {
+                $concatArrays: [
+                  { $ifNull: ["$articleDetails.description", []] },
+                  { $ifNull: ["$customArticleDetails.detail", []] }
+                ]
+              },
+              initialValue: "",
+              in: {
+                $concat: [
+                  "$$value",
+                  { $cond: [{ $eq: ["$$value", ""] }, "", " ///// "] },
+                  { $toUpper: "$$this" }
+                ]
+              }
+            }
+          }
+        }
+      },
       matchObj,
-      matchClient,
+      {
+        $match: search
+          ? {
+              $or: [
+                { "client.name": { $regex: search, $options: "i" } },
+                { articlesString: { $regex: search, $options: "i" } }
+              ]
+            }
+          : {}
+      },
       {
         $addFields: {
           priority: { $ifNull: ["$priority", 0] } // Asigna 0 si priority es null o undefined

@@ -8,6 +8,9 @@ export class Order {
   @Prop()
   orderNumber: number
 
+  @Prop()
+  billNumber: string
+
   @Prop({type: [ItemSchema]})
   articles: Item[]
 
