@@ -82,3 +82,8 @@ Galeria de insumos
 equivalencias articulos - insumos
 
 averiguar conexion con arca
+
+
+deuda a favor total (fact) y VER del lado izq
+centavos en los pagos (step)
+achicar un poco las fotos de articulos 
