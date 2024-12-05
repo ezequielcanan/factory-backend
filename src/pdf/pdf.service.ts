@@ -172,7 +172,7 @@ export class PdfService {
     });
   }
 
-  async writeTableHeaders(doc: PDFDocument, headers: Array<string>, society: string, middle = false) {
+  async writeTableHeaders(doc: PDFDocument, headers: Array<string>, society: string, middle = false, buys = false) {
 
     const firstYTable = 20;
     const firstXTable = 5;
@@ -181,7 +181,7 @@ export class PdfService {
 
     const widthPerHeader = 90 / headers?.length
 
-    doc.save().moveTo(xTable, yTable).lineTo(percentageOfPageX(100 - firstXTable), yTable).lineTo(percentageOfPageX(100 - firstXTable), yTable + percentageOfPageY(5)).lineTo(xTable, yTable + percentageOfPageY(5)).fill(society == "Arcan" ? '#22255c' : "#42062b");
+    doc.save().moveTo(xTable, yTable).lineTo(percentageOfPageX(100 - firstXTable), yTable).lineTo(percentageOfPageX(100 - firstXTable), yTable + percentageOfPageY(5)).lineTo(xTable, yTable + percentageOfPageY(5)).fill(buys ? "#217a2e" : (society == "Arcan" ? '#22255c' : "#42062b"));
 
     headers.forEach((header, i) => {
       const textWidth = doc.fill("#FFFFFF").font(`${assetsPath}/fonts/Montserrat-Bold.ttf`).fontSize(12).widthOfString(header);
@@ -325,8 +325,9 @@ export class PdfService {
 
   async generateOrderPdf(oid: string, res: Response, buy: string): Promise<any> {
     const order = !buy ? await this.ordersService.getOrder(oid) : await this.buyOrdersService.getOrder(oid)
+    const multiply = order?.mode ? 1.21 : 1
     const doc = new PDFDocument({ size: "A4", margin: 50 });
-    const isArcan = order?.society == "Arcan"
+    const isArcan = buy ? true : (order?.society == "Arcan")
 
     if (order?.suborders?.length) {
       order.articles = order?.suborders?.map(suborder => suborder?.["articles"]).flat()
@@ -340,14 +341,18 @@ export class PdfService {
     doc.pipe(res);
 
     // ENCABEZADO
-    const mainColor = isArcan ? "#5357a1" : "#6b204e";
-    this.generateHeader(mainColor, isArcan, doc, order?.society)
+    const mainColor = buy ? "#33aa44" : (isArcan ? "#5357a1" : "#6b204e")
+    this.generateHeader(mainColor, isArcan, doc, buy ? "arcan" : order?.society)
 
-    const items = [
+    const items = !buy ? [
       { header: "Cliente", value: order?.client["name"] },
       { header: "Domicilio", value: order?.client["address"] },
       { header: "Presupuesto", value: "N° " + order?.orderNumber },
-    ];
+    ] : [
+      { header: "Compra", value: "N° " + order?.orderNumber },
+      { header: "Proveedor", value: order?.client["name"] },
+      { header: "Fecha", value: moment(order?.date).format("DD-MM-YYYY") },
+    ]
 
     const itemsInitialXPercentage = 40;
     const paddingItems = 3;
@@ -359,8 +364,8 @@ export class PdfService {
 
     // Dibujamos los headers solo una vez
 
-    const headers = ["Cantidad", "Producto", "Detalle", "Unitario", "Total"];
-    const [firstYTable, firstXTable, yTable, xTable] = await this.writeTableHeaders(doc, headers, order?.society)
+    const headers = ["Cantidad", "Producto", "Detalle", "Unitario", `Total${order?.mode ? " con iva" : ""}`];
+    const [firstYTable, firstXTable, yTable, xTable] = await this.writeTableHeaders(doc, headers, order?.society, false, buy ? true : false)
 
     let finalY = yTable + percentageOfPageY(5);
 
@@ -385,7 +390,7 @@ export class PdfService {
         { notText: true, value: `./uploads/articles/${article?.customArticle ? "custom/" : ""}${article?.article?._id || article?.customArticle?._id}/thumbnail.png` },
         { value:  article?.article ? article?.article["description"] + (article?.article["size"] ? " - " + article?.article["size"] : "") : article?.customArticle["detail"] + (article?.customArticle["size"] ? " - " + article?.customArticle["size"] : "") },
         { value: article?.price || 0 },
-        { value: (article?.price || 0) * (article?.quantity || 0) }
+        { value: (article?.price || 0) * (article?.quantity || 0) * multiply}
       ];
 
       texts.forEach((text, iText) => {
@@ -415,7 +420,7 @@ export class PdfService {
 
     // Total
     checkAndAddPage(); // Verifica si necesita una nueva página para el total
-    const totalString = `Total: $${order?.articles?.reduce((acc, art) => acc + ((art?.price || 0) * (art?.quantity || 0)), 0)}`;
+    const totalString = `Total: $${order?.articles?.reduce((acc, art) => acc + ((art?.price || 0) * (art?.quantity || 0)), 0) * multiply}`;
     const textWidth = doc.fill("#000000").font(`${assetsPath}/fonts/Montserrat-ExtraBold.ttf`).fontSize(18).widthOfString(totalString);
     const xStartPosition = percentageOfPageX(95) - textWidth;
     doc.text(totalString, xStartPosition, finalY + percentageOfPageY(3), { width: 0, ellipsis: false });
@@ -447,8 +452,8 @@ export class PdfService {
     return doc
   }
 
-  async generateClientExcel(cid: string, res: Response): Promise<any> {
-    const orders = (await this.ordersService.getOrdersByClient(cid)).filter(o => o.finished)
+  async generateClientExcel(cid: string, res: Response, buys: boolean = false): Promise<any> {
+    const orders = !buys ? (await this.ordersService.getOrdersByClient(cid)).filter(o => o.finished) : (await this.clientsService.getOrdersByClient(cid, true)).filter(o => o.received)
     const client = await this.clientsService.getClient(cid)
     const payments = await this.paymentsService.getPaymentsByClient(cid)
 
@@ -500,7 +505,7 @@ export class PdfService {
     let items = []
 
     orders.forEach((order, i) => {
-      items.push({ date: moment(order?.finalDate, "DD-MM-YYYY"), text: `Pedido N° ${order?.orderNumber}`, bill: order?.billNumber, amount: order?.articles?.reduce((acc, art) => acc + ((art?.quantity || 0) * (art?.price || 0) * (order?.mode ? 1.21 : 1)), 0) })
+      items.push({ date: moment(order[buys ? "receivedDate" : "finalDate"], "DD-MM-YYYY"), text: `Pedido N° ${order?.orderNumber}`, bill: order?.billNumber, amount: order?.articles?.reduce((acc, art) => acc + ((art?.quantity || 0) * (art?.price || 0) * (order?.mode ? 1.21 : 1)), 0) })
     })
 
     payments.forEach((payment) => {

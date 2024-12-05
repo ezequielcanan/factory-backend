@@ -23,8 +23,8 @@ export class PaymentsService {
     }, 0)
   }
 
-  async getClientBalance(cid: string): Promise<any> {
-    const orders = await this.clientsService.getOrdersByClient(cid)
+  async getClientBalance(cid: string, buys: boolean = false): Promise<any> {
+    const orders = await this.clientsService.getOrdersByClient(cid, buys)
 
     const ordersTotal = orders.reduce((acc, order) => {
       const multiply = (order?.mode ? 1.21 : 1)
@@ -52,10 +52,10 @@ export class PaymentsService {
     return this.paymentModel.findOneAndUpdate({ _id: new Types.ObjectId(id) }, { $set: updateObj }, { new: true })
   }
 
-  async getClientsResume(): Promise<any> {
-    const clients = await this.clientsService.getClients(false, "")
+  async getClientsResume(buys: boolean = false): Promise<any> {
+    const clients = await this.clientsService.getClients(false, "", buys)
     await Promise.all(clients.map(async (client, i) => {
-      const result = await this.getClientBalance(client["_id"])
+      const result = await this.getClientBalance(client["_id"], buys)
 
       clients[i]["balance"] = result["balance"]
     }))
@@ -63,9 +63,9 @@ export class PaymentsService {
     return clients.sort((a,b) => b["balance"] - a["balance"])
   }
 
-  async getClientResume(cid: string): Promise<any> {
+  async getClientResume(cid: string, buys: boolean = false): Promise<any> {
     const client = await this.clientsService.getClient(cid)
-    const clientResume = await this.getClientBalance(cid)
+    const clientResume = await this.getClientBalance(cid, buys)
     const payments = await this.getPaymentsByClient(cid)
 
     return {...client["_doc"], ...clientResume, payments}

@@ -21,9 +21,31 @@ export class BuyOrder {
   mode: boolean
 
   @Prop()
+  priority: boolean
+
+  @Prop()
   date: Date
+
+  @Prop()
+  billNumber: string
+
+  @Prop()
+  received: boolean
+
+  @Prop()
+  receivedDate: Date
 }
 
 export const BuyOrderSchema = SchemaFactory.createForClass(BuyOrder)
+
+BuyOrderSchema.pre("findOne", function (next) {
+  this.populate("client")
+  next()
+})
+
+BuyOrderSchema.pre("find", function (next) {
+  this.populate("client")
+  next()
+})
 
 export type BuyOrderDocument = HydratedDocument<BuyOrder>

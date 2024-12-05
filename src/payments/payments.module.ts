@@ -6,6 +6,7 @@ import { Payment, PaymentSchema } from './schema/payments.schema';
 import { ClientsService } from 'src/clients/clients.service';
 import { Client, ClientSchema } from 'src/clients/schema/clients.schema';
 import { Order, OrderSchema } from 'src/orders/schemas/orders.schema';
+import { BuyOrder, BuyOrderSchema } from 'src/buy-orders/schema/buy-orders.schema';
 
 @Module({
   imports: [
@@ -13,6 +14,7 @@ import { Order, OrderSchema } from 'src/orders/schemas/orders.schema';
       {name: Payment.name, schema: PaymentSchema},
       {name: Client.name, schema: ClientSchema},
       {name: Order.name, schema: OrderSchema},
+      {name: BuyOrder.name, schema: BuyOrderSchema},
     ])
   ],
   controllers: [PaymentsController],

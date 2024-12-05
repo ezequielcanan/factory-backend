@@ -27,8 +27,8 @@ export class PdfController {
   }
 
   @Get('/cc/:cid')
-  async generateClientExcel(@Param("cid") cid: string, @Res() res: Response) {
-    const [wb, name] = await this.pdfService.generateClientExcel(cid, res)
+  async generateClientExcel(@Param("cid") cid: string, @Query("buys") buys: string, @Res() res: Response) {
+    const [wb, name] = await this.pdfService.generateClientExcel(cid, res, buys ? true : false)
     wb.write(`Cuenta corriente ${name || ""}.xlsx`, res)
   }
 

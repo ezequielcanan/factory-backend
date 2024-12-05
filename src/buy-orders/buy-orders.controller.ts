@@ -20,6 +20,11 @@ export class BuyOrdersController {
     return result
   }
 
+  @Get("/recent")
+  async getBuyOrdersResume(@Query("from") from: string, @Query("to") to: string) {
+    return this.buyOrderService.getRecentBuyOrders(from, to)
+  }
+
   @Get("/:id")
   async getBuyOrder(@Param("id") id: string) {
     const result = await this.buyOrderService.getOrder(id)

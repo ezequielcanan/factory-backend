@@ -14,13 +14,13 @@ export class PaymentsController {
   }
 
   @Get("/balance")
-  async getClientsBalance() {
-    return this.paymentsService.getClientsResume()
+  async getClientsBalance(@Query("buys") buys: string) {
+    return this.paymentsService.getClientsResume(buys ? true : false)
   }
 
   @Get("/balance/:cid")
-  async getClientBalance(@Param("cid") cid: string) {
-    return this.paymentsService.getClientResume(cid)
+  async getClientBalance(@Param("cid") cid: string, @Query("buys") buys: string) {
+    return this.paymentsService.getClientResume(cid, buys ? true : false)
   }
 
   @Get("/:cid")

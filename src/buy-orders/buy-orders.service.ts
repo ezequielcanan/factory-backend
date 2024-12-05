@@ -5,6 +5,7 @@ import { Model, Types } from 'mongoose';
 import { CreateBuyOrderDto } from './dto/create-buy-order.dto';
 import { CustomArticle, CustomArticleDocument } from 'src/articles/schema/customArticle.schema';
 import { Article, ArticleDocument } from 'src/articles/schema/articles.schema';
+import * as moment from 'moment';
 
 @Injectable()
 export class BuyOrdersService {
@@ -61,12 +62,13 @@ export class BuyOrdersService {
       matchClient,
       {
         $addFields: {
-          priority: { $ifNull: ["$priority", 0] }
+          priority: { $ifNull: ["$priority", false] }
         }
       },
       {
         $sort: {
           "priority": -1,
+          "received": 1
         }
       },
       {
@@ -167,5 +169,30 @@ export class BuyOrdersService {
     const updateObj = {}
     updateObj[property] = (value == "true" || value == "false") ? ((value == "true") ? true : false) : value
     return this.buyOrderModel.findOneAndUpdate({ _id: new Types.ObjectId(id) }, { $set: updateObj }, { new: true })
+  }
+
+  async getRecentBuyOrders(from, to, property = "receivedDate"): Promise<any> {
+    const dateString = "DD-MM-YYYY"
+    const fromDate = moment(from || moment().subtract(7, "days").format(dateString), dateString).toDate()
+    const toDate = to ? moment(to, dateString).subtract(-1, "days").toDate() : new Date()
+
+    const recentOrders = await this.buyOrderModel.find({
+      [property]: { $gte: fromDate, $lte: toDate }
+    })
+
+    const resume = {}
+    resume["orders"] = recentOrders || []
+    resume["ordersLength"] = recentOrders?.length || 0
+    resume["profits"] = recentOrders?.reduce((acc, order) => {
+      return acc + (order?.articles?.reduce((artAcc, art) => artAcc + ((art?.price || 0) * (art?.quantity || 0) * (order?.mode ? 1.21 : 1)), 0))
+    }, 0)
+
+    const articles = recentOrders.map((order) => order?.articles).flat()
+
+    resume["articles"] = articles.filter((article, index, self) =>
+      index === self.findIndex((t) => article?.article ? String(t?.article?._id) === String(article?.article?._id) : String(t?.customArticle?._id) === String(article?.customArticle?._id))
+    )
+
+    return resume;
   }
 }

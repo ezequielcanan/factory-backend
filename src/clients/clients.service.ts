@@ -4,12 +4,14 @@ import { Client, ClientDocument } from './schema/clients.schema';
 import { Model, Types } from 'mongoose';
 import { CreateClientDto } from './dto/create-client.dto';
 import { Order, OrderDocument } from 'src/orders/schemas/orders.schema';
+import { BuyOrder, BuyOrderDocument } from 'src/buy-orders/schema/buy-orders.schema';
 
 @Injectable()
 export class ClientsService {
   constructor(
     @InjectModel(Client.name) private clientModel: Model<ClientDocument>,
-    @InjectModel(Order.name) private orderModel: Model<OrderDocument>
+    @InjectModel(Order.name) private orderModel: Model<OrderDocument>,
+    @InjectModel(BuyOrder.name) private buyOrderModel: Model<BuyOrderDocument>,
   ) { }
 
   async createClient(client: CreateClientDto): Promise<Client | undefined> {
@@ -49,7 +51,7 @@ export class ClientsService {
     return this.clientModel.findOneAndUpdate({ _id: id }, { $set: client }, { new: true })
   }
 
-  async getOrdersByClient(cid: string): Promise<any> {
-    return this.orderModel.find({client: new Types.ObjectId(cid), finished: true}).populate("articles.article").populate("articles.customArticle")
+  async getOrdersByClient(cid: string, buys: boolean = false): Promise<any> {
+    return !buys ? this.orderModel.find({client: new Types.ObjectId(cid), finished: true}).populate("articles.article").populate("articles.customArticle") : this.buyOrderModel.find({client: new Types.ObjectId(cid), received: true}).populate("articles.article").populate("articles.customArticle")
   }
 }
