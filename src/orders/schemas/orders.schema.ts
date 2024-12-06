@@ -11,6 +11,9 @@ export class Order {
   @Prop()
   billNumber: string
 
+  @Prop()
+  billDate: Date
+
   @Prop({type: [ItemSchema]})
   articles: Item[]
 
