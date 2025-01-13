@@ -33,6 +33,9 @@ export class BuyOrder {
   billDate: Date
 
   @Prop()
+  ordered: boolean
+
+  @Prop()
   received: boolean
 
   @Prop()
