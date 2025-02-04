@@ -61,6 +61,9 @@ export class Order {
 
   @Prop()
   priority: number
+
+  @Prop()
+  cloned: boolean
 }
 
 export const OrderSchema = SchemaFactory.createForClass(Order)

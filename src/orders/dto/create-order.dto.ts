@@ -62,6 +62,10 @@ export class CreateOrderDto {
   finished: boolean;
 
   @IsOptional()
+  @IsBoolean()
+  cloned: boolean;
+
+  @IsOptional()
   @IsString()
   extraInfo: string;
 }
