@@ -20,8 +20,8 @@ export class ActivitiesController {
   }
 
   @Get()
-  async getActivities(@Query("to") to: string, @Query("from") from: string) {
-    return this.activitiesService.getActivities(moment.utc(to, "YYYY-MM-DD").toDate(), moment.utc(from, "YYYY-MM-DD").toDate())
+  async getActivities(@Query("to") to: string, @Query("from") from: string,  @Query("cut") cut: string) {
+    return this.activitiesService.getActivities(moment.utc(to, "YYYY-MM-DD").toDate(), moment.utc(from, "YYYY-MM-DD").toDate(), cut == "true")
   }
 
   @Delete("/:id")

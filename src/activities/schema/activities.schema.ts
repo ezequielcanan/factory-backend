@@ -14,6 +14,9 @@ export class Activity {
 
   @Prop()
   delivered: boolean
+
+  @Prop({default: false, type: Boolean})
+  cut: boolean
 }
 
 export const ActivitySchema = SchemaFactory.createForClass(Activity)

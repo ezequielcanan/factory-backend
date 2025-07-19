@@ -17,14 +17,19 @@ export class ActivitiesService {
     return this.activityModel.create(activity)
   }
 
-  async getActivities(to, from): Promise<any> {
+  async getActivities(to, from, cut = false): Promise<any> {
     const orders = await this.ordersService.getRecentOrders(from, to, "deliveryDate")
     
     const dateString = "DD-MM-YYYY"
     const fromDate = moment(from, dateString).toDate()
     const toDate = to ? moment(to, dateString).add(2, "days").toDate() : new Date()
-
-    const activities = await this.activityModel.find({date: {$gte: fromDate, $lte: toDate}})
+    const findObj = {date: {$gte: fromDate, $lte: toDate}}
+    if (cut) {
+      findObj["cut"] = true
+    } else {
+      findObj["$or"] = [{ cut: { $exists: false } },{ cut: { $eq: false } }]
+    }
+    const activities = await this.activityModel.find(findObj)
     
 
     return {orders: orders["orders"], activities}
